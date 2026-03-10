@@ -2,6 +2,7 @@ package com.example.noteslist.presentation.customviews
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.example.noteslist.R
@@ -24,7 +25,6 @@ class NoteStackView @JvmOverloads constructor(
         }
     private val noteViews = mutableListOf<NoteView>()
     private var collapseButton: TextView? = null
-
 
     init {
         context.withStyledAttributes(attrs, R.styleable.NoteStackView, defStyleAttr, 0) {
@@ -53,10 +53,25 @@ class NoteStackView @JvmOverloads constructor(
         requestLayout()
     }
 
-
     private fun updateVisibilityAndButton() {
-        TODO("Not yet implemented")
+        if (isExpanded) {
+            noteViews.forEach { it.visibility = VISIBLE }
+            if (collapseButton == null) {
+                collapseButton = createCollapseButton()
+                addView(collapseButton)
+            }
+        } else {
+            for (i in stackMaxVisible until noteViews.size) {
+                noteViews[i].visibility = GONE
+            }
+            collapseButton?.let {
+                removeView(it)
+                collapseButton = null
+            }
+        }
     }
+
+    private fun createCollapseButton(): TextView? {}
 
     override fun onLayout(
         changed: Boolean,
