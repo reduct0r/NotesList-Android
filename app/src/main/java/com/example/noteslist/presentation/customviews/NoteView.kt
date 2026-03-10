@@ -5,7 +5,7 @@ import android.graphics.drawable.GradientDrawable
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.ViewOutlineProvider
-import android.widget.FrameLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 import com.example.noteslist.R
 import com.example.noteslist.databinding.NoteViewBinding
 
@@ -13,7 +13,7 @@ class NoteView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-): FrameLayout(context, attrs, defStyleAttr) {
+): ConstraintLayout(context, attrs, defStyleAttr) {
     private var binding: NoteViewBinding =
         NoteViewBinding.inflate(LayoutInflater.from(context), this, true)
 
@@ -97,6 +97,19 @@ class NoteView @JvmOverloads constructor(
     }
 
     private fun updateBackgroundAndStatus() {
-        TODO("Not yet implemented")
+        val newColor = if (isRead) {
+            context.getColor(R.color.read_background)
+        } else {
+            unreadBackgroundColor
+        }
+        backgroundDrawable.setColor(newColor)
+
+        if (isRead) {
+            binding.tvStatus.text = context.getString(R.string.note_read)
+            binding.tvStatus.setTextColor(context.getColor(R.color.status_read))
+        } else {
+            binding.tvStatus.text = context.getString(R.string.note_unread)
+            binding.tvStatus.setTextColor(context.getColor(R.color.status_unread))
+        }
     }
 }
