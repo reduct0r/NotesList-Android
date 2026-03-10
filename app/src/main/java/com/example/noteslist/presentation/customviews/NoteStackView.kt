@@ -4,7 +4,9 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.ViewGroup
 import android.widget.TextView
+import com.example.noteslist.R
 import com.example.noteslist.model.Note
+import androidx.core.content.withStyledAttributes
 
 class NoteStackView @JvmOverloads constructor(
     context: Context,
@@ -23,6 +25,17 @@ class NoteStackView @JvmOverloads constructor(
     private val noteViews = mutableListOf<NoteView>()
     private var collapseButton: TextView? = null
 
+
+    init {
+        context.withStyledAttributes(attrs, R.styleable.NoteStackView, defStyleAttr, 0) {
+            stackSpacing = getDimensionPixelSize(R.styleable.NoteStackView_stackSpacing, 20)
+            stackMaxVisible = getInt(R.styleable.NoteStackView_stackMaxVisible, 3)
+        }
+
+        setOnClickListener {
+            if (!isExpanded && noteViews.isNotEmpty()) isExpanded = true
+        }
+    }
 
     private fun updateVisibilityAndButton() {
         TODO("Not yet implemented")

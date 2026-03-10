@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.ViewOutlineProvider
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.content.withStyledAttributes
 import com.example.noteslist.R
 import com.example.noteslist.databinding.NoteViewBinding
 
@@ -57,44 +58,53 @@ class NoteView @JvmOverloads constructor(
 
     init {
 
-        val typedArray = context.obtainStyledAttributes(attrs, R.styleable.NoteView, defStyleAttr, 0)
+        context.withStyledAttributes(attrs, R.styleable.NoteView, defStyleAttr, 0) {
 
-        unreadBackgroundColor = typedArray.getColor(
-            R.styleable.NoteView_noteBackgroundColor,
-            context.getColor(R.color.unread_background)
-        )
+            unreadBackgroundColor = getColor(
+                R.styleable.NoteView_noteBackgroundColor,
+                context.getColor(R.color.unread_background)
+            )
 
-        val textColor = typedArray.getColor(
-            R.styleable.NoteView_noteTextColor,
-            context.getColor(R.color.text_primary)
-        )
+            val bgColor = getColor(
+                R.styleable.NoteView_noteBackgroundColor,
+                context.getColor(R.color.unread_background)
+            )
 
-        val cornerRadius = typedArray.getDimension(
-            R.styleable.NoteView_noteCornerRadius, 12f * resources.displayMetrics.density
-        )
+            val textColor = getColor(
+                R.styleable.NoteView_noteTextColor,
+                context.getColor(R.color.text_primary)
+            )
 
-        val elevation = typedArray.getDimension(
-            R.styleable.NoteView_noteElevation, 8f * resources.displayMetrics.density
-        )
+            val cornerRadius = getDimension(
+                R.styleable.NoteView_noteCornerRadius,
+                12f * resources.displayMetrics.density
+            )
 
-        typedArray.recycle()
+            val elev = getDimension(
+                R.styleable.NoteView_noteElevation,
+                8f * resources.displayMetrics.density
+            )
 
-        backgroundDrawable.cornerRadius = cornerRadius
-        backgroundDrawable.setColor(unreadBackgroundColor)
-        background = backgroundDrawable
+        this@NoteView.apply {
+            unreadBackgroundColor = bgColor
 
-        this.elevation = elevation
-        this.clipToOutline = true
-        this.outlineProvider = ViewOutlineProvider.BACKGROUND
+            backgroundDrawable.cornerRadius = cornerRadius
+            backgroundDrawable.setColor(unreadBackgroundColor)
+            background = backgroundDrawable
 
-        binding.tvTitle.setTextColor(textColor)
-        binding.tvContent.setTextColor(textColor)
-        binding.tvTime.setTextColor(textColor)
+            elevation = elev
+            clipToOutline = true
+            outlineProvider = ViewOutlineProvider.BACKGROUND
 
-        setOnClickListener {
-            isRead = !isRead
+            binding.tvTitle.setTextColor(textColor)
+            binding.tvContent.setTextColor(textColor)
+            binding.tvTime.setTextColor(textColor)
+
+            setOnClickListener {
+                isRead = !isRead
+            }
         }
-
+    }
         updateBackgroundAndStatus()
         applyFadeToSecondLine()
     }
