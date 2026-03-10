@@ -6,4 +6,9 @@
         <attr name="noteCornerRadius" format="dimension" />
         <attr name="noteElevation" format="dimension" />
     </declare-styleable>
+
+    <declare-styleable name="NoteStackView">
+        <attr name="stackSpacing" format="dimension" />
+        <attr name="stackMaxVisible" format="integer" />
+    </declare-styleable>
 </resources>
