@@ -37,6 +37,23 @@ class NoteStackView @JvmOverloads constructor(
         }
     }
 
+    fun setNotes(notes: List<Note>) {
+        removeAllViews()
+        noteViews.clear()
+
+        val sorted = notes.sortedByDescending { it.createdAt }
+
+        sorted.forEach { note ->
+            val noteView = createNoteView(note)
+            noteViews.add(noteView)
+            addView(noteView)
+        }
+
+        updateVisibilityAndButton()
+        requestLayout()
+    }
+
+
     private fun updateVisibilityAndButton() {
         TODO("Not yet implemented")
     }
@@ -48,10 +65,6 @@ class NoteStackView @JvmOverloads constructor(
         r: Int,
         b: Int
     ) {
-        TODO("Not yet implemented")
-    }
-
-    fun setNotes(notes: List<Note>) {
         TODO("Not yet implemented")
     }
 
