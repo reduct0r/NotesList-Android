@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="NoteStyle" parent="android:Widget" />
+
+    <style name="NoteStyle.NotRead" parent="NoteStyle">
+        <item name="noteBackgroundColor">@color/unread_background</item>
+        <item name="noteTextColor">@color/text_primary</item>
+        <item name="noteCornerRadius">12dp</item>
+        <item name="noteElevation">8dp</item>
+    </style>
+
+    <style name="NoteStyle.Read" parent="NoteStyle">
+        <item name="noteBackgroundColor">@color/read_background</item>
+        <item name="noteTextColor">@color/text_primary</item>
+        <item name="noteCornerRadius">12dp</item>
+        <item name="noteElevation">8dp</item>
+    </style>
+
+</resources>
