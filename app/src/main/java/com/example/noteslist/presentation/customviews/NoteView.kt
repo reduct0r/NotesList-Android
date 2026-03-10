@@ -1,6 +1,7 @@
 package com.example.noteslist.presentation.customviews
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -39,6 +40,7 @@ class NoteView @JvmOverloads constructor(
         set(value) {
             field = value
             binding.tvContent.text = value
+            applyFadeToSecondLine()
         }
 
     var time: String = ""
@@ -94,6 +96,7 @@ class NoteView @JvmOverloads constructor(
         }
 
         updateBackgroundAndStatus()
+        applyFadeToSecondLine()
     }
 
     private fun updateBackgroundAndStatus() {
@@ -110,6 +113,33 @@ class NoteView @JvmOverloads constructor(
         } else {
             binding.tvStatus.text = context.getString(R.string.note_unread)
             binding.tvStatus.setTextColor(context.getColor(R.color.status_unread))
+        }
+        applyFadeToSecondLine()
+    }
+
+    private fun applyFadeToSecondLine() {
+        binding.tvContent.post {
+            if (binding.tvContent.lineCount < 2) {
+                binding.fadeOverlay.visibility = GONE
+                return@post
+            }
+
+            binding.fadeOverlay.apply {
+                visibility = VISIBLE
+                translationY = binding.tvContent.lineHeight.toFloat() * 0.8f
+                layoutParams.height = binding.tvContent.lineHeight
+
+                val gradient = GradientDrawable(
+                    GradientDrawable.Orientation.LEFT_RIGHT,
+                    intArrayOf(
+                        Color.TRANSPARENT,
+                        Color.TRANSPARENT,
+                        backgroundDrawable.color?.defaultColor ?: unreadBackgroundColor
+                    )
+                )
+
+                background = gradient
+            }
         }
     }
 }
