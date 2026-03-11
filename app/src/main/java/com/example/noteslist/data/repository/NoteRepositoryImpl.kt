@@ -10,22 +10,30 @@ class NoteRepositoryImpl : NoteRepository {
         val day = 86400000L
 
         return listOf(
-            Note(1, "Сдать ДЗ по Android", "Кастомные View и RecyclerView", now - hour, true),
-            Note(2, "Купить корм коту", "Взять две пачки влажного", now - hour * 2, false),
-            Note(3, "Записаться в зал", "Пробная тренировка на 19:00", now - hour * 5, false),
+            Note(1, "ДЗ по Android", "RecyclerView & Delegates", now - hour, true),
+            Note(2, "ДЗ по АиСД", "Алгоритмы на графах", now - hour * 2, true),
+            Note(3, "Корм коту", "Купить влажный", now - hour * 3, false),
+            Note(4, "Зал", "Тренировка в 19:00", now - hour * 4, false),
+            Note(5, "Ужин", "Приготовить пасту", now - hour * 5, false),
 
-            Note(4, "Позвонить маме", "Поздравить с прошедшим", now - day - hour, true),
-            Note(5, "Забрать посылку", "Код для получения: 5544", now - day - hour * 4, false),
-            Note(6, "Помыть машину", "Записаться на мойку самообслуживания", now - day - hour * 8, false),
+            Note(6, "Позвонить маме", "Поздравить!", now - day - hour, true),
+            Note(7, "Срочный баг", "Пофиксить в проде", now - day - hour * 2, true),
 
-            Note(7, "Купить молоко", "Обязательно 2,5%, свежее", now - day * 2 - hour, false),
-            Note(8, "Подготовить отчет", "Скинуть в Slack до обеда", now - day * 2 - hour * 6, true),
+            Note(8, "Купить молоко", "2.5%", now - day * 2 - hour, false),
+            Note(9, "Помыть машину", "Самообслуживание", now - day * 2 - hour * 3, false),
 
-            Note(9, "Записаться к врачу", "Терапевт, 15 марта в 10:00", now - day * 3 - hour, true),
-            Note(10, "Посмотреть лекцию", "Тема: Анимации в Android", now - day * 3 - hour * 3, false),
+            Note(10, "Заметка 1", "Текст", now - day * 3 - hour, false),
+            Note(11, "Заметка 2", "Текст", now - day * 3 - hour * 2, false),
+            Note(12, "Заметка 3", "Текст", now - day * 3 - hour * 3, false),
+            Note(13, "Заметка 4", "Текст", now - day * 3 - hour * 4, false),
+            Note(14, "Заметка 5", "Текст", now - day * 3 - hour * 5, false),
 
-            Note(11, "Идея для пет-проекта", "Приложение для трекинга привычек", now - day * 7, false),
-            Note(12, "Заказать пиццу", "Вечерний чилл с друзьями", now - day * 7 - hour * 5, false)
+            Note(15, "Одинокая заметка", "Я одна в этом дне", now - day * 4, false),
+
+            Note(16, "Старая важная", "Проверка архива", now - day * 7, true),
+            Note(17, "Старая обычная", "Проверка архива", now - day * 7 - hour, false),
+
+            Note(18, "Прошлый год", "С Новым Годом!", now - day * 400, false)
         )
     }
 }
