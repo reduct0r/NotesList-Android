@@ -9,6 +9,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:stackSpacing="20dp"
-        app:stackMaxVisible="3" />
+        app:stackMaxVisible="3"
+        android:layout_margin="6dp"
+        />
 
 </FrameLayout>

@@ -4,4 +4,6 @@
     android:id="@+id/note_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    style="@style/NoteStyle.NotRead" />
+    style="@style/NoteStyle.NotRead"
+    android:layout_margin="6dp"
+    />

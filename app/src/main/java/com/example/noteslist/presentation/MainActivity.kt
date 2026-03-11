@@ -20,10 +20,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        adapter = NoteListAdapter { note ->
-            Toast.makeText(this, "Clicked: ${note.title}", Toast.LENGTH_SHORT).show()
-        }
-
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
             adapter = this@MainActivity.adapter

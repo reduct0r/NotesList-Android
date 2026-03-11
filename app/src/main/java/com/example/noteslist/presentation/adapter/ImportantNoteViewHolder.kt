@@ -19,8 +19,6 @@ class ImportantNoteViewHolder(
         binding.noteView.time = note.getTimeString()
         binding.noteView.isImportant = note.isImportant
         binding.noteView.isRead = note.isRead
-
-        itemView.setOnClickListener { onClick(note) }
     }
 
     companion object {
