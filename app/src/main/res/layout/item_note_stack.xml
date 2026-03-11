@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <com.example.noteslist.presentation.customviews.NoteStackView
+        android:id="@+id/note_stack"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:stackSpacing="20dp"
+        app:stackMaxVisible="3" />
+
+</FrameLayout>
