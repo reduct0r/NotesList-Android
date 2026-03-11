@@ -1,37 +1,37 @@
 package com.example.noteslist.presentation
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.noteslist.domain.NoteRepository
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.noteslist.data.repository.NoteRepositoryImpl
 import com.example.noteslist.databinding.ActivityMainBinding
-import com.example.noteslist.domain.model.Note
-import com.example.noteslist.domain.model.list.ImportantNoteItem
-import com.example.noteslist.domain.model.list.ListItem
-import com.example.noteslist.domain.model.list.NoteStackItem
+import com.example.noteslist.domain.usecase.PrepareNoteListUseCase
+import com.example.noteslist.presentation.adapter.NoteListAdapter
+
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private lateinit var adapter: NoteListAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val repository: NoteRepository = NoteRepositoryImpl()
-        val firstNote = repository.getAllNotes().firstOrNull()
-        val allNotes = repository.getAllNotes()
+        adapter = NoteListAdapter { note ->
+            Toast.makeText(this, "Clicked: ${note.title}", Toast.LENGTH_SHORT).show()
+        }
 
-//        firstNote?.let { note ->
-//            binding.myNote.apply {
-//                title = note.title
-//                content = note.content
-//                time = note.getTimeString()
-//                isRead = note.isRead
-//            }
-//        }
+        binding.recyclerView.apply {
+            layoutManager = LinearLayoutManager(this@MainActivity)
+            adapter = this@MainActivity.adapter
+        }
 
-        binding.myStack.setNotes(allNotes.take(5))
+        val repository = NoteRepositoryImpl()
+        val useCase = PrepareNoteListUseCase()
+        val items = useCase(repository.getAllNotes())
+        adapter.submitList(items)
     }
 }

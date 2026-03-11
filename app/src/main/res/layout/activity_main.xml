@@ -1,25 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app1="http://schemas.android.com/apk/res-auto"
     android:padding="16dp">
 
-<!--    <com.example.noteslist.presentation.customviews.NoteView-->
-<!--        android:id="@+id/my_note"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        app:noteBackgroundColor="@color/unread_background"-->
-<!--        app:noteElevation="4dp" />-->
-
-    <com.example.noteslist.presentation.customviews.NoteStackView
-        android:id="@+id/my_stack"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app1:stackSpacing="8dp"
-        app1:stackMaxVisible="3"
-        app1:stackElOffset="20dp"
-        app1:elementsElevation="5dp"
-        />
+        android:layout_height="match_parent"
+        android:padding="16dp"
+        android:clipToPadding="false" />
+
 </FrameLayout>
