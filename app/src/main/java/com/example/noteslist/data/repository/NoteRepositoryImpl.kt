@@ -5,42 +5,27 @@ import com.example.noteslist.domain.model.Note
 
 class NoteRepositoryImpl : NoteRepository {
     override fun getAllNotes(): List<Note> {
+        val now = System.currentTimeMillis()
+        val hour = 3600000L
+        val day = 86400000L
+
         return listOf(
-            Note(
-                id = 1,
-                title = "Купить молоко",
-                content = "Обязательно 2,5%, свежее",
-                createdAt = System.currentTimeMillis() - 86400000 * 2,
-                isImportant = false
-            ),
-            Note(
-                id = 2,
-                title = "Позвонить маме",
-                content = "Поздравить с днём рождения",
-                createdAt = System.currentTimeMillis() - 3600000 * 5,
-                isImportant = true
-            ),
-            Note(
-                id = 3,
-                title = "Сдать ДЗ по Android",
-                content = "Кастомные View NoteView и NoteStackView",
-                createdAt = System.currentTimeMillis(),
-                isImportant = false
-            ),
-            Note(
-                id = 4,
-                title = "Забрать посылку",
-                content = "Срок до 18:00",
-                createdAt = System.currentTimeMillis() - 86400000,
-                isImportant = false
-            ),
-            Note(
-                id = 5,
-                title = "Записаться к врачу",
-                content = "Терапевт, 15 марта",
-                createdAt = System.currentTimeMillis() - 86400000 * 3,
-                isImportant = true
-            )
+            Note(1, "Сдать ДЗ по Android", "Кастомные View и RecyclerView", now - hour, true),
+            Note(2, "Купить корм коту", "Взять две пачки влажного", now - hour * 2, false),
+            Note(3, "Записаться в зал", "Пробная тренировка на 19:00", now - hour * 5, false),
+
+            Note(4, "Позвонить маме", "Поздравить с прошедшим", now - day - hour, true),
+            Note(5, "Забрать посылку", "Код для получения: 5544", now - day - hour * 4, false),
+            Note(6, "Помыть машину", "Записаться на мойку самообслуживания", now - day - hour * 8, false),
+
+            Note(7, "Купить молоко", "Обязательно 2,5%, свежее", now - day * 2 - hour, false),
+            Note(8, "Подготовить отчет", "Скинуть в Slack до обеда", now - day * 2 - hour * 6, true),
+
+            Note(9, "Записаться к врачу", "Терапевт, 15 марта в 10:00", now - day * 3 - hour, true),
+            Note(10, "Посмотреть лекцию", "Тема: Анимации в Android", now - day * 3 - hour * 3, false),
+
+            Note(11, "Идея для пет-проекта", "Приложение для трекинга привычек", now - day * 7, false),
+            Note(12, "Заказать пиццу", "Вечерний чилл с друзьями", now - day * 7 - hour * 5, false)
         )
     }
 }
