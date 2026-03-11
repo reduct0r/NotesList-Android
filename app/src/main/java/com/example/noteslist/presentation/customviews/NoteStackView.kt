@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import com.example.noteslist.R
-import com.example.noteslist.model.Note
+import com.example.noteslist.domain.model.Note
 import androidx.core.content.withStyledAttributes
 
 class NoteStackView @JvmOverloads constructor(
@@ -71,7 +71,9 @@ class NoteStackView @JvmOverloads constructor(
         }
     }
 
-    private fun createCollapseButton(): TextView? {}
+    private fun createCollapseButton(): TextView? {
+        TODO("Not yet implemented")
+    }
 
     override fun onLayout(
         changed: Boolean,
