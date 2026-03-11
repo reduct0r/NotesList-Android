@@ -28,6 +28,6 @@ class MainActivity : AppCompatActivity() {
 //            }
 //        }
 
-        binding.myStack.setNotes(allNotes.take(3))
+        binding.myStack.setNotes(allNotes.take(5))
     }
 }
