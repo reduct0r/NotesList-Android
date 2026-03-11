@@ -7,7 +7,7 @@ import com.example.noteslist.data.repository.NoteRepositoryImpl
 import com.example.noteslist.databinding.ActivityMainBinding
 import com.example.noteslist.domain.model.Note
 import com.example.noteslist.domain.usecase.PrepareNoteListUseCase
-import com.example.noteslist.presentation.adapter.ImportantNoteDelegate
+import com.example.noteslist.presentation.adapter.delegates.ImportantNoteDelegate
 import com.example.noteslist.presentation.adapter.NoteListAdapter
 
 class MainActivity : AppCompatActivity() {

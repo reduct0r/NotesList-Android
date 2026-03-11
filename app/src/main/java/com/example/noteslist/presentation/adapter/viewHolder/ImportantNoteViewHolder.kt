@@ -1,4 +1,4 @@
-package com.example.noteslist.presentation.adapter
+package com.example.noteslist.presentation.adapter.viewHolder
 
 import android.view.LayoutInflater
 import android.view.ViewGroup

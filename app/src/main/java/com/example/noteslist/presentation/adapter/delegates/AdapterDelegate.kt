@@ -1,4 +1,4 @@
-package com.example.noteslist.presentation.adapter
+package com.example.noteslist.presentation.adapter.delegates
 
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
