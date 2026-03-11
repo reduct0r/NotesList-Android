@@ -10,5 +10,7 @@
     <declare-styleable name="NoteStackView">
         <attr name="stackSpacing" format="dimension" />
         <attr name="stackMaxVisible" format="integer" />
+        <attr name="stackElOffset" format="dimension" />
+        <attr name="elementsElevation" format="dimension" />
     </declare-styleable>
 </resources>

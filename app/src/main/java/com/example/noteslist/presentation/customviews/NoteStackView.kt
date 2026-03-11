@@ -15,8 +15,11 @@ class NoteStackView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : ViewGroup(context, attrs, defStyleAttr) {
 
-    private var stackSpacing: Int = 20.dpToPx()
-    private var stackMaxVisible: Int = 3
+    private var childSpacing: Int = DEFAULT_CHILD_SPACING_DP.dpToPx()
+    private var stackMaxVisible: Int = DEFAULT_MAX_VISIBLE
+    private var stackElementOffset: Int = DEFAULT_STACK_OFFSET_DP.dpToPx()
+    private var elementsElevation: Int = DEFAULT_ELEVATION.dpToPx()
+
     private var isExpanded = false
         set(value) {
             field = value
@@ -28,8 +31,10 @@ class NoteStackView @JvmOverloads constructor(
 
     init {
         context.withStyledAttributes(attrs, R.styleable.NoteStackView, defStyleAttr, 0) {
-            stackSpacing = getDimensionPixelSize(R.styleable.NoteStackView_stackSpacing, 20.dpToPx())
-            stackMaxVisible = getInt(R.styleable.NoteStackView_stackMaxVisible, 3)
+            childSpacing = getDimensionPixelSize(R.styleable.NoteStackView_stackSpacing, DEFAULT_CHILD_SPACING_DP.dpToPx())
+            stackMaxVisible = getInt(R.styleable.NoteStackView_stackMaxVisible, DEFAULT_MAX_VISIBLE)
+            stackElementOffset = getDimensionPixelSize(R.styleable.NoteStackView_stackElOffset, DEFAULT_STACK_OFFSET_DP.dpToPx())
+            elementsElevation = getDimensionPixelSize(R.styleable.NoteStackView_elementsElevation, DEFAULT_ELEVATION.dpToPx())
         }
 
         setOnClickListener {
@@ -79,7 +84,7 @@ class NoteStackView @JvmOverloads constructor(
             gravity = Gravity.CENTER
             setPadding(16.dpToPx(), 12.dpToPx(), 16.dpToPx(), 12.dpToPx())
             setBackgroundColor(context.getColor(R.color.read_background))
-            elevation = 4f
+            elevation = elementsElevation.toFloat()
             setOnClickListener { isExpanded = false }
         }
     }
@@ -114,12 +119,12 @@ class NoteStackView @JvmOverloads constructor(
             child.measure(childWidthSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED))
 
             if (isExpanded) {
-                totalHeight += child.measuredHeight + 8.dpToPx()
+                totalHeight += child.measuredHeight + childSpacing
             }
         }
 
         if (childrenToMeasure.isNotEmpty() && !isExpanded) {
-            totalHeight = childrenToMeasure[0].measuredHeight + (childrenToMeasure.size - 1) * stackSpacing
+            totalHeight = childrenToMeasure[0].measuredHeight + (childrenToMeasure.size - 1) * stackElementOffset
         }
 
         setMeasuredDimension(parentWidth, resolveSize(totalHeight, heightMeasureSpec))
@@ -140,7 +145,7 @@ class NoteStackView @JvmOverloads constructor(
                 if (child.visibility == VISIBLE) {
                     val h = child.measuredHeight
                     child.layout(0, currentTop, parentWidth, currentTop + h)
-                    currentTop += h + 8.dpToPx()
+                    currentTop += h + childSpacing
                 }
             }
             collapseButton?.let { btn ->
@@ -154,9 +159,9 @@ class NoteStackView @JvmOverloads constructor(
             visibleNotes.forEachIndexed { index, child ->
                 if (child.visibility == VISIBLE) {
                     val h = child.measuredHeight
-                    val topOffset = index * stackSpacing
+                    val topOffset = index * stackElementOffset
                     child.layout(0, topOffset, parentWidth, topOffset + h)
-                    child.elevation = (visibleCount - index) * 6f
+                    child.elevation = (visibleCount - index) + elementsElevation.toFloat()
                 }
             }
             visibleNotes.reversed().forEach { it.bringToFront() }
@@ -164,5 +169,12 @@ class NoteStackView @JvmOverloads constructor(
     }
 
     private fun Int.dpToPx(): Int = (this * resources.displayMetrics.density).toInt()
+
+    companion object {
+        private const val DEFAULT_CHILD_SPACING_DP = 8
+        private const val DEFAULT_MAX_VISIBLE = 3
+        private const val DEFAULT_STACK_OFFSET_DP = 20
+        private const val DEFAULT_ELEVATION = 4
+    }
 }
 
