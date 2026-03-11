@@ -5,6 +5,10 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.noteslist.domain.NoteRepository
 import com.example.noteslist.data.repository.NoteRepositoryImpl
 import com.example.noteslist.databinding.ActivityMainBinding
+import com.example.noteslist.domain.model.Note
+import com.example.noteslist.domain.model.list.ImportantNoteItem
+import com.example.noteslist.domain.model.list.ListItem
+import com.example.noteslist.domain.model.list.NoteStackItem
 
 class MainActivity : AppCompatActivity() {
 
@@ -29,5 +33,27 @@ class MainActivity : AppCompatActivity() {
 //        }
 
         binding.myStack.setNotes(allNotes.take(5))
+    }
+
+    private fun prepareListItems(notes: List<Note>): List<ListItem> {
+        val grouped = notes
+            .groupBy { it.getDateString() }
+            .toSortedMap(compareByDescending { it })
+
+        val items = mutableListOf<ListItem>()
+
+        grouped.forEach { (_, notesOnDate) ->
+            notesOnDate.filter { it.isImportant }
+                .forEach { note ->
+                    items.add(ImportantNoteItem(note))
+                }
+
+            val ordinaryNotes = notesOnDate.filterNot { it.isImportant }
+            if (ordinaryNotes.isNotEmpty()) {
+                items.add(NoteStackItem(ordinaryNotes))
+            }
+        }
+
+        return items
     }
 }

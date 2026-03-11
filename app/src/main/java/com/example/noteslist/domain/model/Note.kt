@@ -15,4 +15,7 @@ data class Note(
     fun getTimeString(): String {
         return SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(createdAt))
     }
+
+    fun getDateString(): String = java.text.SimpleDateFormat("dd.MM.yyyy", java.util.Locale.getDefault())
+        .format(Date(createdAt))
 }
