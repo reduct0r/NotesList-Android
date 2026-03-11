@@ -4,40 +4,29 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.noteslist.domain.model.Note
 import com.example.noteslist.domain.model.list.ImportantNoteItem
 import com.example.noteslist.domain.model.list.ListItem
 import com.example.noteslist.domain.model.list.NoteStackItem
 
 class NoteListAdapter(
-    private val onNoteClick: (Note) -> Unit
+    importantNoteDelegate: ImportantNoteDelegate
 ) : ListAdapter<ListItem, RecyclerView.ViewHolder>(DiffCallback()) {
 
+    private val delegates = listOf(
+        importantNoteDelegate,
+        NoteStackDelegate()
+    )
+
     override fun getItemViewType(position: Int): Int {
-        return when (getItem(position)) {
-            is ImportantNoteItem -> VIEW_TYPE_IMPORTANT
-            is NoteStackItem -> VIEW_TYPE_STACK
-        }
+        return delegates.indexOfFirst { it.isForViewType(currentList, position) }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return when (viewType) {
-            VIEW_TYPE_IMPORTANT -> ImportantNoteViewHolder.create(parent, onNoteClick)
-            VIEW_TYPE_STACK -> NoteStackViewHolder.create(parent)
-            else -> throw IllegalArgumentException("Unknown view type $viewType")
-        }
+        return delegates[viewType].onCreateViewHolder(parent)
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (val item = getItem(position)) {
-            is ImportantNoteItem -> (holder as ImportantNoteViewHolder).bind(item)
-            is NoteStackItem -> (holder as NoteStackViewHolder).bind(item)
-        }
-    }
-
-    companion object {
-        private const val VIEW_TYPE_IMPORTANT = 1
-        private const val VIEW_TYPE_STACK = 2
+        delegates[getItemViewType(position)].onBindViewHolder(holder, currentList, position)
     }
 
     private class DiffCallback : DiffUtil.ItemCallback<ListItem>() {
