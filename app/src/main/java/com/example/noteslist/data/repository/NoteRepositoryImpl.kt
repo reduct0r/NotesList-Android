@@ -1,5 +1,6 @@
 package com.example.noteslist.data.repository
 
+import com.example.noteslist.domain.NoteRepository
 import com.example.noteslist.domain.model.Note
 
 class NoteRepositoryImpl : NoteRepository {

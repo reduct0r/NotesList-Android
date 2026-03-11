@@ -2,7 +2,7 @@ package com.example.noteslist.presentation
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import com.example.noteslist.data.repository.NoteRepository
+import com.example.noteslist.domain.NoteRepository
 import com.example.noteslist.data.repository.NoteRepositoryImpl
 import com.example.noteslist.databinding.ActivityMainBinding
 

@@ -1,4 +1,4 @@
-package com.example.noteslist.data.repository
+package com.example.noteslist.domain
 
 import com.example.noteslist.domain.model.Note
 
