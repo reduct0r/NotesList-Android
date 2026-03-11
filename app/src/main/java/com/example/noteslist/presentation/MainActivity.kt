@@ -6,9 +6,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.noteslist.data.repository.NoteRepositoryImpl
 import com.example.noteslist.databinding.ActivityMainBinding
+import com.example.noteslist.domain.model.Note
 import com.example.noteslist.domain.usecase.PrepareNoteListUseCase
+import com.example.noteslist.presentation.adapter.ImportantNoteDelegate
 import com.example.noteslist.presentation.adapter.NoteListAdapter
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,9 +21,13 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        adapter = NoteListAdapter(
+            ImportantNoteDelegate { note -> doSmth(note)}
+        )
+
         binding.recyclerView.apply {
             layoutManager = LinearLayoutManager(this@MainActivity)
-            adapter = this@MainActivity.adapter
+            this.adapter = this@MainActivity.adapter
         }
 
         val repository = NoteRepositoryImpl()
@@ -30,4 +35,8 @@ class MainActivity : AppCompatActivity() {
         val items = useCase(repository.getAllNotes())
         adapter.submitList(items)
     }
+}
+
+private fun MainActivity.doSmth(note: Note) {
+    TODO()
 }
