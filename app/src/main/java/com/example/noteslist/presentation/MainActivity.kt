@@ -34,26 +34,4 @@ class MainActivity : AppCompatActivity() {
 
         binding.myStack.setNotes(allNotes.take(5))
     }
-
-    private fun prepareListItems(notes: List<Note>): List<ListItem> {
-        val grouped = notes
-            .groupBy { it.getDateString() }
-            .toSortedMap(compareByDescending { it })
-
-        val items = mutableListOf<ListItem>()
-
-        grouped.forEach { (_, notesOnDate) ->
-            notesOnDate.filter { it.isImportant }
-                .forEach { note ->
-                    items.add(ImportantNoteItem(note))
-                }
-
-            val ordinaryNotes = notesOnDate.filterNot { it.isImportant }
-            if (ordinaryNotes.isNotEmpty()) {
-                items.add(NoteStackItem(ordinaryNotes))
-            }
-        }
-
-        return items
-    }
 }

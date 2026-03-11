@@ -1,0 +1,31 @@
+package com.example.noteslist.domain.usecase
+
+import com.example.noteslist.domain.model.Note
+import com.example.noteslist.domain.model.list.ImportantNoteItem
+import com.example.noteslist.domain.model.list.ListItem
+import com.example.noteslist.domain.model.list.NoteStackItem
+
+class PrepareNoteListUseCase {
+
+    operator fun invoke(notes: List<Note>): List<ListItem> {
+        val groupedByDate = notes
+            .groupBy { it.getDateString() }
+            .toSortedMap(compareByDescending { it })
+
+        val result = mutableListOf<ListItem>()
+
+        groupedByDate.values.forEach { notesOnDate ->
+            notesOnDate.filter { it.isImportant }
+                .forEach { note ->
+                    result.add(ImportantNoteItem(note))
+                }
+
+            val ordinary = notesOnDate.filterNot { it.isImportant }
+            if (ordinary.isNotEmpty()) {
+                result.add(NoteStackItem(ordinary))
+            }
+        }
+
+        return result
+    }
+}
