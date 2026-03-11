@@ -17,14 +17,17 @@ class MainActivity : AppCompatActivity() {
 
         val repository: NoteRepository = NoteRepositoryImpl()
         val firstNote = repository.getAllNotes().firstOrNull()
+        val allNotes = repository.getAllNotes()
 
-        firstNote?.let { note ->
-            binding.myNote.apply {
-                title = note.title
-                content = note.content
-                time = note.getTimeString()
-                isRead = note.isRead
-            }
-        }
+//        firstNote?.let { note ->
+//            binding.myNote.apply {
+//                title = note.title
+//                content = note.content
+//                time = note.getTimeString()
+//                isRead = note.isRead
+//            }
+//        }
+
+        binding.myStack.setNotes(allNotes.take(3))
     }
 }
