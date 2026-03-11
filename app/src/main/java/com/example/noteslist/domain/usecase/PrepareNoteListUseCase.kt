@@ -1,6 +1,7 @@
 package com.example.noteslist.domain.usecase
 
 import com.example.noteslist.domain.model.Note
+import com.example.noteslist.domain.model.list.DateHeaderItem
 import com.example.noteslist.domain.model.list.ImportantNoteItem
 import com.example.noteslist.domain.model.list.ListItem
 import com.example.noteslist.domain.model.list.NoteStackItem
@@ -14,7 +15,9 @@ class PrepareNoteListUseCase {
 
         val result = mutableListOf<ListItem>()
 
-        groupedByDate.values.forEach { notesOnDate ->
+        groupedByDate.forEach { (date, notesOnDate) ->
+            result.add(DateHeaderItem(date))
+
             notesOnDate.filter { it.isImportant }
                 .forEach { note ->
                     result.add(ImportantNoteItem(note))
