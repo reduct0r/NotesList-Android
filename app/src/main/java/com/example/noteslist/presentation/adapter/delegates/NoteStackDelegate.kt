@@ -12,7 +12,7 @@ class NoteStackDelegate : AdapterDelegate<ListItem> {
         items[position] is NoteStackItem
 
     override fun onCreateViewHolder(parent: ViewGroup): RecyclerView.ViewHolder =
-        NoteStackViewHolder.Companion.create(parent)
+        NoteStackViewHolder.create(parent)
 
     override fun onBindViewHolder(
         holder: RecyclerView.ViewHolder,

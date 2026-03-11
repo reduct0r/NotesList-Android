@@ -15,7 +15,7 @@ class ImportantNoteDelegate(
         items[position] is ImportantNoteItem
 
     override fun onCreateViewHolder(parent: ViewGroup): RecyclerView.ViewHolder =
-        ImportantNoteViewHolder.Companion.create(parent, onClick)
+        ImportantNoteViewHolder.create(parent, onClick)
 
     override fun onBindViewHolder(
         holder: RecyclerView.ViewHolder,
