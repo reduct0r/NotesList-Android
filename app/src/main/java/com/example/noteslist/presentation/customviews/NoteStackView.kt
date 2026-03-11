@@ -8,6 +8,8 @@ import android.widget.TextView
 import com.example.noteslist.R
 import com.example.noteslist.domain.model.Note
 import androidx.core.content.withStyledAttributes
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 
 class NoteStackView @JvmOverloads constructor(
     context: Context,
@@ -115,7 +117,7 @@ class NoteStackView @JvmOverloads constructor(
         }
 
         childrenToMeasure.forEach { child ->
-            if (child.visibility == GONE) return@forEach
+            if (child.isGone) return@forEach
             child.measure(childWidthSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED))
 
             if (isExpanded) {
@@ -142,14 +144,14 @@ class NoteStackView @JvmOverloads constructor(
 
         if (isExpanded) {
             noteViews.forEach { child ->
-                if (child.visibility == VISIBLE) {
+                if (child.isVisible) {
                     val h = child.measuredHeight
                     child.layout(0, currentTop, parentWidth, currentTop + h)
                     currentTop += h + childSpacing
                 }
             }
             collapseButton?.let { btn ->
-                if (btn.visibility == VISIBLE) {
+                if (btn.isVisible) {
                     btn.layout(0, currentTop, parentWidth, currentTop + btn.measuredHeight)
                 }
             }
@@ -157,7 +159,7 @@ class NoteStackView @JvmOverloads constructor(
             val visibleCount = minOf(stackMaxVisible, noteViews.size)
             val visibleNotes = noteViews.take(visibleCount)
             visibleNotes.forEachIndexed { index, child ->
-                if (child.visibility == VISIBLE) {
+                if (child.isVisible) {
                     val h = child.measuredHeight
                     val topOffset = index * stackElementOffset
                     child.layout(0, topOffset, parentWidth, topOffset + h)
