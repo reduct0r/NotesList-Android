@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.noteslist.domain.model.list.ImportantNoteItem
 import com.example.noteslist.domain.model.list.ListItem
 import com.example.noteslist.domain.model.list.NoteStackItem
+import com.example.noteslist.presentation.adapter.delegates.DateHeaderDelegate
 import com.example.noteslist.presentation.adapter.delegates.ImportantNoteDelegate
 import com.example.noteslist.presentation.adapter.delegates.NoteStackDelegate
 
@@ -15,6 +16,7 @@ class NoteListAdapter(
 ) : ListAdapter<ListItem, RecyclerView.ViewHolder>(DiffCallback()) {
 
     private val delegates = listOf(
+        DateHeaderDelegate(),
         importantNoteDelegate,
         NoteStackDelegate()
     )
