@@ -5,11 +5,18 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <com.example.noteslist.presentation.customviews.NoteView
-        android:id="@+id/my_note"
+<!--    <com.example.noteslist.presentation.customviews.NoteView-->
+<!--        android:id="@+id/my_note"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        app:noteBackgroundColor="@color/unread_background"-->
+<!--        app:noteElevation="4dp" />-->
+
+    <com.example.noteslist.presentation.customviews.NoteStackView
+        android:id="@+id/my_stack"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:noteBackgroundColor="@color/unread_background"
-        app:noteElevation="4dp" />
+        app:stackSpacing="24dp"
+        app:stackMaxVisible="2" />
 
 </FrameLayout>
