@@ -11,11 +11,12 @@ data class Note(
     val createdAt: Long = System.currentTimeMillis(),
     val isImportant: Boolean = false,
     var isRead: Boolean = false
-) {
-    fun getTimeString(): String {
-        return SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(createdAt))
-    }
+)
 
-    fun getDateString(): String = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-        .format(Date(createdAt))
+fun Note.getTimeString(): String {
+    return SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(this.createdAt))
+}
+
+fun Note.getDateString(): String {
+    return SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date(this.createdAt))
 }
