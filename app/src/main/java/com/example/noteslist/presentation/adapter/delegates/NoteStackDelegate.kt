@@ -4,10 +4,15 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.noteslist.databinding.ItemNoteStackBinding
+import com.example.noteslist.domain.model.Note
 import com.example.noteslist.domain.model.list.ListItem
 import com.example.noteslist.domain.model.list.NoteStackItem
 
-class NoteStackDelegate : AdapterDelegate<ListItem> {
+class NoteStackDelegate(
+    private val onNoteClick: (Note) -> Unit,
+    private val onExpand: (NoteStackItem) -> Unit,
+    private val onCollapse: (NoteStackItem) -> Unit
+) : AdapterDelegate<ListItem> {
 
     override fun isForViewType(items: List<ListItem>, position: Int): Boolean =
         items[position] is NoteStackItem
@@ -16,7 +21,7 @@ class NoteStackDelegate : AdapterDelegate<ListItem> {
         val binding = ItemNoteStackBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-        return NoteStackViewHolder(binding)
+        return NoteStackViewHolder(binding, onNoteClick, onExpand, onCollapse)
     }
 
     override fun onBindViewHolder(
@@ -29,11 +34,24 @@ class NoteStackDelegate : AdapterDelegate<ListItem> {
     }
 
     private class NoteStackViewHolder(
-        private val binding: ItemNoteStackBinding
+        private val binding: ItemNoteStackBinding,
+        private val onNoteClick: (Note) -> Unit,
+        private val onExpand: (NoteStackItem) -> Unit,
+        private val onCollapse: (NoteStackItem) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: NoteStackItem) {
-            binding.noteStack.setNotes(item.notes)
+            binding.noteStack.apply {
+                setNotes(item.notes, item.isExpanded, onNoteClick)
+
+                onExpandRequest = {
+                    onExpand(item)
+                }
+
+                onCollapseRequest = {
+                    onCollapse(item)
+                }
+            }
         }
     }
 }

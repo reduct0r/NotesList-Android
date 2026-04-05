@@ -3,13 +3,14 @@ package com.example.noteslist.presentation.customviews
 import android.content.Context
 import android.util.AttributeSet
 import android.view.Gravity
+import android.view.MotionEvent
 import android.view.ViewGroup
 import android.widget.TextView
-import com.example.noteslist.R
-import com.example.noteslist.domain.model.Note
 import androidx.core.content.withStyledAttributes
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import com.example.noteslist.R
+import com.example.noteslist.domain.model.Note
 import com.example.noteslist.domain.model.getTimeString
 
 class NoteStackView @JvmOverloads constructor(
@@ -29,8 +30,12 @@ class NoteStackView @JvmOverloads constructor(
             updateVisibilityAndButton()
             requestLayout()
         }
+
+    private var isSingleNote = false
     private val noteViews = mutableListOf<NoteView>()
     private var collapseButton: TextView? = null
+    var onExpandRequest: (() -> Unit)? = null
+    var onCollapseRequest: (() -> Unit)? = null
 
     init {
         context.withStyledAttributes(attrs, R.styleable.NoteStackView, defStyleAttr, 0) {
@@ -39,15 +44,16 @@ class NoteStackView @JvmOverloads constructor(
             stackElementOffset = getDimensionPixelSize(R.styleable.NoteStackView_stackElOffset, DEFAULT_STACK_OFFSET_DP.dpToPx())
             elementsElevation = getDimensionPixelSize(R.styleable.NoteStackView_elementsElevation, DEFAULT_ELEVATION.dpToPx())
         }
-
-        setOnClickListener {
-            if (!isExpanded && noteViews.isNotEmpty()) isExpanded = true
-        }
     }
 
-    fun setNotes(notes: List<Note>) {
+    fun setNotes(
+        notes: List<Note>,
+        expanded: Boolean,
+        onNoteClick: (Note) -> Unit
+    ) {
         removeAllViews()
         noteViews.clear()
+        collapseButton = null
 
         val sorted = notes.sortedByDescending { it.createdAt }
 
@@ -55,16 +61,21 @@ class NoteStackView @JvmOverloads constructor(
             val noteView = createNoteView(note)
             noteViews.add(noteView)
             addView(noteView)
+
+            noteView.setOnClickListener { onNoteClick(note) }
         }
 
-        updateVisibilityAndButton()
-        requestLayout()
+        isSingleNote = sorted.size == 1
+        isExpanded = expanded || isSingleNote
     }
 
     private fun updateVisibilityAndButton() {
-        if (isExpanded) {
+        isClickable = !isExpanded && !isSingleNote
+
+        if (isExpanded || isSingleNote) {
             noteViews.forEach { it.visibility = VISIBLE }
-            if (collapseButton == null) {
+
+            if (collapseButton == null && !isSingleNote) {
                 collapseButton = createCollapseButton()
                 addView(collapseButton)
             }
@@ -88,7 +99,7 @@ class NoteStackView @JvmOverloads constructor(
             setPadding(16.dpToPx(), 12.dpToPx(), 16.dpToPx(), 12.dpToPx())
             setBackgroundColor(context.getColor(R.color.read_background))
             elevation = elementsElevation.toFloat()
-            setOnClickListener { isExpanded = false }
+            setOnClickListener { onCollapseRequest?.invoke() }
         }
     }
 
@@ -102,8 +113,19 @@ class NoteStackView @JvmOverloads constructor(
         }
     }
 
-    override fun onInterceptTouchEvent(ev: android.view.MotionEvent?): Boolean {
-        return !isExpanded || super.onInterceptTouchEvent(ev)
+
+    override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
+        return !isExpanded && !isSingleNote
+    }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        if (isExpanded || isSingleNote) {
+            return false
+        }
+        if (event?.action == MotionEvent.ACTION_UP) {
+            onExpandRequest?.invoke()
+        }
+        return true
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -111,7 +133,7 @@ class NoteStackView @JvmOverloads constructor(
         val childWidthSpec = MeasureSpec.makeMeasureSpec(parentWidth, MeasureSpec.EXACTLY)
 
         var totalHeight = 0
-        val childrenToMeasure = if (isExpanded) {
+        val childrenToMeasure = if (isExpanded || isSingleNote) {
             noteViews + listOfNotNull(collapseButton)
         } else {
             noteViews.take(stackMaxVisible)
@@ -121,29 +143,23 @@ class NoteStackView @JvmOverloads constructor(
             if (child.isGone) return@forEach
             child.measure(childWidthSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED))
 
-            if (isExpanded) {
+            if (isExpanded || isSingleNote) {
                 totalHeight += child.measuredHeight + childSpacing
             }
         }
 
-        if (childrenToMeasure.isNotEmpty() && !isExpanded) {
+        if (childrenToMeasure.isNotEmpty() && !isExpanded && !isSingleNote) {
             totalHeight = childrenToMeasure[0].measuredHeight + (childrenToMeasure.size - 1) * stackElementOffset
         }
 
         setMeasuredDimension(parentWidth, resolveSize(totalHeight, heightMeasureSpec))
     }
 
-    override fun onLayout(
-        changed: Boolean,
-        l: Int,
-        t: Int,
-        r: Int,
-        b: Int
-    ) {
+    override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         val parentWidth = r - l
         var currentTop = 0
 
-        if (isExpanded) {
+        if (isExpanded || isSingleNote) {
             noteViews.forEach { child ->
                 if (child.isVisible) {
                     val h = child.measuredHeight
@@ -180,4 +196,3 @@ class NoteStackView @JvmOverloads constructor(
         private const val DEFAULT_ELEVATION = 4
     }
 }
-
