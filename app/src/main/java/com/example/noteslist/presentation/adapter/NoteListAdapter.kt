@@ -37,8 +37,7 @@ class NoteListAdapter(
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        delegates[getItemViewType(position)]
-            .onBindViewHolder(holder, currentList, position)
+        delegates[holder.itemViewType].onBindViewHolder(holder, currentList, position)
     }
 
     private class DiffCallback : DiffUtil.ItemCallback<ListItem>() {
