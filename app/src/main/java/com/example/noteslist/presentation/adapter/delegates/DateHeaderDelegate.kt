@@ -12,8 +12,12 @@ class DateHeaderDelegate : AdapterDelegate<ListItem> {
     override fun isForViewType(items: List<ListItem>, position: Int): Boolean =
         items[position] is DateHeaderItem
 
-    override fun onCreateViewHolder(parent: ViewGroup): RecyclerView.ViewHolder =
-        DateHeaderViewHolder.create(parent)
+    override fun onCreateViewHolder(parent: ViewGroup): RecyclerView.ViewHolder {
+        val binding = ItemDateHeaderBinding.inflate(
+            LayoutInflater.from(parent.context), parent, false
+        )
+        return DateHeaderViewHolder(binding)
+    }
 
     override fun onBindViewHolder(
         holder: RecyclerView.ViewHolder,
@@ -29,18 +33,7 @@ class DateHeaderDelegate : AdapterDelegate<ListItem> {
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: DateHeaderItem) {
-            with(binding.tvDate) {
-                text = item.date
-            }
-        }
-
-        companion object {
-            fun create(parent: ViewGroup): DateHeaderViewHolder {
-                val binding = ItemDateHeaderBinding.inflate(
-                    LayoutInflater.from(parent.context), parent, false
-                )
-                return DateHeaderViewHolder(binding)
-            }
+            binding.tvDate.text = item.date
         }
     }
 }

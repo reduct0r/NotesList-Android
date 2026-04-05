@@ -12,8 +12,12 @@ class NoteStackDelegate : AdapterDelegate<ListItem> {
     override fun isForViewType(items: List<ListItem>, position: Int): Boolean =
         items[position] is NoteStackItem
 
-    override fun onCreateViewHolder(parent: ViewGroup): RecyclerView.ViewHolder =
-        NoteStackViewHolder.create(parent)
+    override fun onCreateViewHolder(parent: ViewGroup): RecyclerView.ViewHolder {
+        val binding = ItemNoteStackBinding.inflate(
+            LayoutInflater.from(parent.context), parent, false
+        )
+        return NoteStackViewHolder(binding)
+    }
 
     override fun onBindViewHolder(
         holder: RecyclerView.ViewHolder,
@@ -29,16 +33,7 @@ class NoteStackDelegate : AdapterDelegate<ListItem> {
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: NoteStackItem) {
-            with(binding.noteStack) { setNotes(item.notes) }
-        }
-
-        companion object {
-            fun create(parent: ViewGroup): NoteStackViewHolder {
-                val binding = ItemNoteStackBinding.inflate(
-                    LayoutInflater.from(parent.context), parent, false
-                )
-                return NoteStackViewHolder(binding)
-            }
+            binding.noteStack.setNotes(item.notes)
         }
     }
 }

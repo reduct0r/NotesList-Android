@@ -100,9 +100,6 @@ class NoteView @JvmOverloads constructor(
             binding.tvContent.setTextColor(textColor)
             binding.tvTime.setTextColor(textColor)
 
-            setOnClickListener {
-                isRead = !isRead
-            }
         }
     }
         updateBackgroundAndStatus()

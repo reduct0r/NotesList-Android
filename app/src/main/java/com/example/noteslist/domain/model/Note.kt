@@ -10,7 +10,7 @@ data class Note(
     val content: String,
     val createdAt: Long = System.currentTimeMillis(),
     val isImportant: Boolean = false,
-    var isRead: Boolean = false
+    val isRead: Boolean = false
 )
 
 fun Note.getTimeString(): String {

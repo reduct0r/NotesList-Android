@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.noteslist.data.repository.NoteRepositoryImpl
 import com.example.noteslist.databinding.ActivityMainBinding
 import com.example.noteslist.domain.model.Note
+import com.example.noteslist.domain.model.list.ImportantNoteItem
 import com.example.noteslist.domain.usecase.PrepareNoteListUseCase
 import com.example.noteslist.presentation.adapter.delegates.ImportantNoteDelegate
 import com.example.noteslist.presentation.adapter.NoteListAdapter
@@ -21,7 +22,18 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         adapter = NoteListAdapter(
-            ImportantNoteDelegate { note -> doSmth(note)}
+            ImportantNoteDelegate { clickedNote ->
+                val newList = adapter.currentList.map { listItem ->
+                    if (listItem is ImportantNoteItem && listItem.note.id == clickedNote.id) {
+                        ImportantNoteItem(
+                            listItem.note.copy(isRead = !listItem.note.isRead)
+                        )
+                    } else {
+                        listItem
+                    }
+                }
+                adapter.submitList(newList)
+            }
         )
 
         binding.recyclerView.apply {
@@ -36,6 +48,3 @@ class MainActivity : AppCompatActivity() {
     }
 }
 
-private fun MainActivity.doSmth(note: Note) {
-    TODO()
-}
