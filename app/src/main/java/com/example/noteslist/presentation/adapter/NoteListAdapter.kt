@@ -5,6 +5,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.noteslist.domain.model.Note
+import com.example.noteslist.domain.model.list.DateHeaderItem
 import com.example.noteslist.domain.model.list.ImportantNoteItem
 import com.example.noteslist.domain.model.list.ListItem
 import com.example.noteslist.domain.model.list.NoteStackItem
@@ -41,7 +42,6 @@ class NoteListAdapter(
     }
 
     private class DiffCallback : DiffUtil.ItemCallback<ListItem>() {
-
         override fun areItemsTheSame(oldItem: ListItem, newItem: ListItem): Boolean {
             return when {
                 oldItem is ImportantNoteItem && newItem is ImportantNoteItem ->
@@ -49,6 +49,9 @@ class NoteListAdapter(
 
                 oldItem is NoteStackItem && newItem is NoteStackItem ->
                     oldItem.notes.map { it.id } == newItem.notes.map { it.id }
+
+                oldItem is DateHeaderItem && newItem is DateHeaderItem ->
+                    oldItem.date == newItem.date
 
                 else -> false
             }
