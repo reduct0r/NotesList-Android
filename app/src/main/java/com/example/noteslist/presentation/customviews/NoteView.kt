@@ -5,9 +5,11 @@ import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewOutlineProvider
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.withStyledAttributes
+import androidx.core.view.isVisible
 import com.example.noteslist.R
 import com.example.noteslist.databinding.NoteViewBinding
 
@@ -15,9 +17,9 @@ class NoteView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyleAttr: Int = 0
-): ConstraintLayout(context, attrs, defStyleAttr) {
-    private var binding: NoteViewBinding =
-        NoteViewBinding.inflate(LayoutInflater.from(context), this, true)
+) : ConstraintLayout(context, attrs, defStyleAttr) {
+
+    private val binding = NoteViewBinding.inflate(LayoutInflater.from(context), this, true)
 
     var isRead: Boolean = false
         set(value) {
@@ -28,7 +30,7 @@ class NoteView @JvmOverloads constructor(
     var isImportant: Boolean = false
         set(value) {
             field = value
-            binding.ivImportant.visibility = if (value) VISIBLE else GONE
+            binding.ivImportant.isVisible = value
         }
 
     var title: String = ""
@@ -57,15 +59,8 @@ class NoteView @JvmOverloads constructor(
     private var unreadBackgroundColor: Int = 0
 
     init {
-
         context.withStyledAttributes(attrs, R.styleable.NoteView, defStyleAttr, 0) {
-
             unreadBackgroundColor = getColor(
-                R.styleable.NoteView_noteBackgroundColor,
-                context.getColor(R.color.unread_background)
-            )
-
-            val bgColor = getColor(
                 R.styleable.NoteView_noteBackgroundColor,
                 context.getColor(R.color.unread_background)
             )
@@ -77,16 +72,13 @@ class NoteView @JvmOverloads constructor(
 
             val cornerRadius = getDimension(
                 R.styleable.NoteView_noteCornerRadius,
-                12f * resources.displayMetrics.density
+                DEFAULT_CORNER_RADIUS
             )
 
             val elev = getDimension(
                 R.styleable.NoteView_noteElevation,
-                8f * resources.displayMetrics.density
+                DEFAULT_ELEVATION
             )
-
-        this@NoteView.apply {
-            unreadBackgroundColor = bgColor
 
             backgroundDrawable.cornerRadius = cornerRadius
             backgroundDrawable.setColor(unreadBackgroundColor)
@@ -99,44 +91,36 @@ class NoteView @JvmOverloads constructor(
             binding.tvTitle.setTextColor(textColor)
             binding.tvContent.setTextColor(textColor)
             binding.tvTime.setTextColor(textColor)
-
         }
-    }
+
         updateBackgroundAndStatus()
         applyFadeToSecondLine()
     }
 
     private fun updateBackgroundAndStatus() {
-        val newColor = if (isRead) {
-            context.getColor(R.color.read_background)
-        } else {
-            unreadBackgroundColor
-        }
-        backgroundDrawable.setColor(newColor)
+        backgroundDrawable.setColor(if (isRead) context.getColor(R.color.read_background) else unreadBackgroundColor)
 
-        if (isRead) {
-            binding.tvStatus.text = context.getString(R.string.note_read)
-            binding.tvStatus.setTextColor(context.getColor(R.color.status_read))
-        } else {
-            binding.tvStatus.text = context.getString(R.string.note_unread)
-            binding.tvStatus.setTextColor(context.getColor(R.color.status_unread))
+        binding.tvStatus.apply {
+            text = context.getString(if (isRead) R.string.note_read else R.string.note_unread)
+            setTextColor(context.getColor(if (isRead) R.color.status_read else R.color.status_unread))
         }
+
         applyFadeToSecondLine()
     }
 
     private fun applyFadeToSecondLine() {
         binding.tvContent.post {
             if (binding.tvContent.lineCount < 2) {
-                binding.fadeOverlay.visibility = GONE
+                binding.fadeOverlay.isVisible = false
                 return@post
             }
 
             binding.fadeOverlay.apply {
-                visibility = VISIBLE
-                translationY = binding.tvContent.lineHeight.toFloat() * 0.8f
+                isVisible = true
+                translationY = binding.tvContent.lineHeight * FADE_TRANSLATION_RATIO
                 layoutParams.height = binding.tvContent.lineHeight
 
-                val gradient = GradientDrawable(
+                background = GradientDrawable(
                     GradientDrawable.Orientation.LEFT_RIGHT,
                     intArrayOf(
                         Color.TRANSPARENT,
@@ -144,9 +128,13 @@ class NoteView @JvmOverloads constructor(
                         backgroundDrawable.color?.defaultColor ?: unreadBackgroundColor
                     )
                 )
-
-                background = gradient
             }
         }
+    }
+
+    private companion object {
+        private const val DEFAULT_CORNER_RADIUS = 12f
+        private const val DEFAULT_ELEVATION = 8f
+        private const val FADE_TRANSLATION_RATIO = 0.8f
     }
 }

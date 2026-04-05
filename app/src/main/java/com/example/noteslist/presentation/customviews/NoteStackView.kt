@@ -58,11 +58,11 @@ class NoteStackView @JvmOverloads constructor(
         val sorted = notes.sortedByDescending { it.createdAt }
 
         sorted.forEach { note ->
-            val noteView = createNoteView(note)
-            noteViews.add(noteView)
-            addView(noteView)
-
-            noteView.setOnClickListener { onNoteClick(note) }
+            createNoteView(note).also { noteView ->
+                noteViews.add(noteView)
+                addView(noteView)
+                noteView.setOnClickListener { onNoteClick(note) }
+            }
         }
 
         isSingleNote = sorted.size == 1
@@ -73,7 +73,7 @@ class NoteStackView @JvmOverloads constructor(
         isClickable = !isExpanded && !isSingleNote
 
         if (isExpanded || isSingleNote) {
-            noteViews.forEach { it.visibility = VISIBLE }
+            noteViews.forEach { it.isVisible = true }
 
             if (collapseButton == null && !isSingleNote) {
                 collapseButton = createCollapseButton()
@@ -81,7 +81,7 @@ class NoteStackView @JvmOverloads constructor(
             }
         } else {
             for (i in stackMaxVisible until noteViews.size) {
-                noteViews[i].visibility = GONE
+                noteViews[i].isGone = true
             }
             collapseButton?.let {
                 removeView(it)
@@ -137,7 +137,6 @@ class NoteStackView @JvmOverloads constructor(
         val parentWidth = MeasureSpec.getSize(widthMeasureSpec)
         val childWidthSpec = MeasureSpec.makeMeasureSpec(parentWidth, MeasureSpec.EXACTLY)
 
-        var totalHeight = 0
         val childrenToMeasure = if (isExpanded || isSingleNote) {
             noteViews + listOfNotNull(collapseButton)
         } else {
@@ -145,16 +144,18 @@ class NoteStackView @JvmOverloads constructor(
         }
 
         childrenToMeasure.forEach { child ->
-            if (child.isGone) return@forEach
-            child.measure(childWidthSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED))
-
-            if (isExpanded || isSingleNote) {
-                totalHeight += child.measuredHeight + childSpacing
+            if (child.isVisible) {
+                child.measure(childWidthSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED))
             }
         }
 
-        if (childrenToMeasure.isNotEmpty() && !isExpanded && !isSingleNote) {
-            totalHeight = childrenToMeasure[0].measuredHeight + (childrenToMeasure.size - 1) * stackElementOffset
+        val totalHeight = if (isExpanded || isSingleNote) {
+            childrenToMeasure.filter { it.isVisible }
+                .sumOf { it.measuredHeight + childSpacing }
+        } else if (childrenToMeasure.isNotEmpty()) {
+            childrenToMeasure[0].measuredHeight + (childrenToMeasure.size - 1) * stackElementOffset
+        } else {
+            0
         }
 
         setMeasuredDimension(parentWidth, resolveSize(totalHeight, heightMeasureSpec))
