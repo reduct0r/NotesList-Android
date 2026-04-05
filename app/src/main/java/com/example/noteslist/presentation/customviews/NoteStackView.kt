@@ -93,10 +93,15 @@ class NoteStackView @JvmOverloads constructor(
     private fun createCollapseButton(): TextView {
         return TextView(context).apply {
             text = context.getString(R.string.collapse)
-            textSize = 15f
+            textSize = COLLAPSE_TEXT_SIZE_SP
             setTextColor(context.getColor(R.color.status_read))
             gravity = Gravity.CENTER
-            setPadding(16.dpToPx(), 12.dpToPx(), 16.dpToPx(), 12.dpToPx())
+            setPadding(
+                COLLAPSE_PADDING_HORIZONTAL.dpToPx(),
+                COLLAPSE_PADDING_VERTICAL.dpToPx(),
+                COLLAPSE_PADDING_HORIZONTAL.dpToPx(),
+                COLLAPSE_PADDING_VERTICAL.dpToPx()
+            )
             setBackgroundColor(context.getColor(R.color.read_background))
             elevation = elementsElevation.toFloat()
             setOnClickListener { onCollapseRequest?.invoke() }
@@ -194,5 +199,9 @@ class NoteStackView @JvmOverloads constructor(
         private const val DEFAULT_MAX_VISIBLE = 3
         private const val DEFAULT_STACK_OFFSET_DP = 20
         private const val DEFAULT_ELEVATION = 4
+
+        private const val COLLAPSE_TEXT_SIZE_SP = 15f
+        private const val COLLAPSE_PADDING_HORIZONTAL = 16
+        private const val COLLAPSE_PADDING_VERTICAL = 12
     }
 }
