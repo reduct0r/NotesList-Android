@@ -8,7 +8,6 @@ import com.example.noteslist.domain.model.Note
 import com.example.noteslist.domain.model.getTimeString
 import com.example.noteslist.domain.model.list.ImportantNoteItem
 import com.example.noteslist.domain.model.list.ListItem
-import com.example.noteslist.presentation.adapter.viewHolder.ImportantNoteViewHolder
 
 class ImportantNoteDelegate(
     private val onClick: (Note) -> Unit

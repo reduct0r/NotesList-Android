@@ -10,6 +10,7 @@ import com.example.noteslist.domain.model.Note
 import androidx.core.content.withStyledAttributes
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import com.example.noteslist.domain.model.getTimeString
 
 class NoteStackView @JvmOverloads constructor(
     context: Context,

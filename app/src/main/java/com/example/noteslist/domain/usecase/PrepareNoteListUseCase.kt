@@ -1,6 +1,7 @@
 package com.example.noteslist.domain.usecase
 
 import com.example.noteslist.domain.model.Note
+import com.example.noteslist.domain.model.getDateString
 import com.example.noteslist.domain.model.list.DateHeaderItem
 import com.example.noteslist.domain.model.list.ImportantNoteItem
 import com.example.noteslist.domain.model.list.ListItem

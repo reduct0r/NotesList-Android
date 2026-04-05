@@ -6,7 +6,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.noteslist.databinding.ItemDateHeaderBinding
 import com.example.noteslist.domain.model.list.DateHeaderItem
 import com.example.noteslist.domain.model.list.ListItem
-import com.example.noteslist.presentation.adapter.viewHolder.DateHeaderViewHolder
 
 class DateHeaderDelegate : AdapterDelegate<ListItem> {
 
