@@ -14,12 +14,15 @@ class ImportantNoteViewHolder(
 
     fun bind(item: ImportantNoteItem) {
         val note = item.note
-        binding.noteView.title = note.title
-        binding.noteView.content = note.content
-        binding.noteView.time = note.getTimeString()
-        binding.noteView.isImportant = note.isImportant
-        binding.noteView.isRead = note.isRead
+        with(binding.noteView) {
+            title = note.title
+            content = note.content
+            time = note.getTimeString()
+            isImportant = note.isImportant
+            isRead = note.isRead
+        }
     }
+
 
     companion object {
         fun create(

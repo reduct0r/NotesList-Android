@@ -11,7 +11,9 @@ class DateHeaderViewHolder(
 ) : RecyclerView.ViewHolder(binding.root) {
 
     fun bind(item: DateHeaderItem) {
-        binding.tvDate.text = item.date
+        with(binding.tvDate) {
+            text = item.date
+        }
     }
 
     companion object {

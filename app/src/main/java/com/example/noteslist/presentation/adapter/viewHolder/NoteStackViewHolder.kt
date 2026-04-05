@@ -11,7 +11,7 @@ class NoteStackViewHolder(
 ) : RecyclerView.ViewHolder(binding.root) {
 
     fun bind(item: NoteStackItem) {
-        binding.noteStack.setNotes(item.notes)
+        with(binding.noteStack) { setNotes(item.notes) }
     }
 
     companion object {
