@@ -1,6 +1,7 @@
 package com.example.noteslist.presentation.customviews
 
 import android.content.Context
+import android.graphics.drawable.GradientDrawable
 import android.util.AttributeSet
 import android.view.Gravity
 import android.view.MotionEvent
@@ -38,6 +39,9 @@ class NoteStackView @JvmOverloads constructor(
     var onCollapseRequest: (() -> Unit)? = null
 
     init {
+        clipChildren = false
+        clipToPadding = false
+
         context.withStyledAttributes(attrs, R.styleable.NoteStackView, defStyleAttr, 0) {
             childSpacing = getDimensionPixelSize(R.styleable.NoteStackView_stackSpacing, DEFAULT_CHILD_SPACING_DP.dpToPx())
             stackMaxVisible = getInt(R.styleable.NoteStackView_stackMaxVisible, DEFAULT_MAX_VISIBLE)
@@ -102,14 +106,18 @@ class NoteStackView @JvmOverloads constructor(
                 COLLAPSE_PADDING_HORIZONTAL.dpToPx(),
                 COLLAPSE_PADDING_VERTICAL.dpToPx()
             )
-            setBackgroundColor(context.getColor(R.color.read_background))
+            background = GradientDrawable().apply {
+                shape = GradientDrawable.RECTANGLE
+                cornerRadius = DEFAULT_BUTTON_RADIUS.dpToPx().toFloat()
+                setColor(context.getColor(R.color.read_background))
+            }
             elevation = elementsElevation.toFloat()
             setOnClickListener { onCollapseRequest?.invoke() }
         }
     }
 
     private fun createNoteView(note: Note): NoteView {
-        return NoteView(context).apply {
+        return NoteView(context, null, 0, R.style.NoteStyle_NotRead).apply {
             title = note.title
             content = note.content
             time = note.getTimeString()
@@ -204,5 +212,7 @@ class NoteStackView @JvmOverloads constructor(
         private const val COLLAPSE_TEXT_SIZE_SP = 15f
         private const val COLLAPSE_PADDING_HORIZONTAL = 16
         private const val COLLAPSE_PADDING_VERTICAL = 12
+
+        private const val DEFAULT_BUTTON_RADIUS = 12
     }
 }

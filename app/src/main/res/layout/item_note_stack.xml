@@ -2,15 +2,20 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <com.example.noteslist.presentation.customviews.NoteStackView
         android:id="@+id/note_stack"
+        style="@style/NoteStyle.NotRead"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:stackSpacing="20dp"
         app:stackMaxVisible="3"
         android:layout_margin="6dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         />
 
 </FrameLayout>

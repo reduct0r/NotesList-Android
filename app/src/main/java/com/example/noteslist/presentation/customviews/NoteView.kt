@@ -16,8 +16,9 @@ import com.example.noteslist.databinding.NoteViewBinding
 class NoteView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
-) : ConstraintLayout(context, attrs, defStyleAttr) {
+    defStyleAttr: Int = 0,
+    defStyleRes: Int = 0
+) : ConstraintLayout(context, attrs, defStyleAttr, defStyleRes) {
 
     private val binding = NoteViewBinding.inflate(LayoutInflater.from(context), this, true)
 
@@ -59,7 +60,8 @@ class NoteView @JvmOverloads constructor(
     private var unreadBackgroundColor: Int = 0
 
     init {
-        context.withStyledAttributes(attrs, R.styleable.NoteView, defStyleAttr, 0) {
+        clipToOutline = false
+        context.withStyledAttributes(attrs, R.styleable.NoteView, defStyleAttr, defStyleRes) {
             unreadBackgroundColor = getColor(
                 R.styleable.NoteView_noteBackgroundColor,
                 context.getColor(R.color.unread_background)
@@ -116,16 +118,15 @@ class NoteView @JvmOverloads constructor(
             }
 
             binding.fadeOverlay.apply {
-                isVisible = true
+                isVisible = binding.tvContent.lineCount >= 2
                 translationY = binding.tvContent.lineHeight * FADE_TRANSLATION_RATIO
                 layoutParams.height = binding.tvContent.lineHeight
-
                 background = GradientDrawable(
                     GradientDrawable.Orientation.LEFT_RIGHT,
                     intArrayOf(
                         Color.TRANSPARENT,
                         Color.TRANSPARENT,
-                        backgroundDrawable.color?.defaultColor ?: unreadBackgroundColor
+                        Color.TRANSPARENT
                     )
                 )
             }
@@ -133,7 +134,7 @@ class NoteView @JvmOverloads constructor(
     }
 
     private companion object {
-        private const val DEFAULT_CORNER_RADIUS = 12f
+        private const val DEFAULT_CORNER_RADIUS = 900f
         private const val DEFAULT_ELEVATION = 8f
         private const val FADE_TRANSLATION_RATIO = 0.8f
     }
