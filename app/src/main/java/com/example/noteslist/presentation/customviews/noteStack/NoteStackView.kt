@@ -29,28 +29,21 @@ class NoteStackView @JvmOverloads constructor(
 
     private val noteViews = mutableListOf<NoteView>()
     private var collapseButton: TextView? = null
+    private var shouldAnimateNextExpand = false
+    private var pendingExpandAnimation = false
 
     private var isExpanded = false
         set(value) {
             val wasExpanded = field
             field = value
 
-            val isStartingExpandAnimation = value && !wasExpanded && !isSingleNote
+            val isStartingExpandAnimation = value && !wasExpanded && !isSingleNote && shouldAnimateNextExpand
+            pendingExpandAnimation = isStartingExpandAnimation
 
             updateVisibilityAndButton(isStartingExpandAnimation)
             requestLayout()
 
-            if (isStartingExpandAnimation) {
-                post {
-                    expandAnimator.startExpandAnimation(
-                        noteViews = noteViews,
-                        collapseButton = collapseButton,
-                        stackElementOffset = stackElementOffset,
-                        elementsElevation = elementsElevation,
-                        parentForPost = this
-                    )
-                }
-            }
+            shouldAnimateNextExpand = false
         }
 
     private var isSingleNote = false
@@ -75,9 +68,14 @@ class NoteStackView @JvmOverloads constructor(
     fun setNotes(
         notes: List<Note>,
         expanded: Boolean,
+        shouldAnimateExpand: Boolean,
         onNoteClick: (Note) -> Unit
     ) {
         val targetExpanded = expanded || notes.size == 1
+        shouldAnimateNextExpand = (shouldAnimateExpand) &&
+                !isExpanded &&
+                targetExpanded &&
+                notes.size > 1
 
         if (isExpanded && targetExpanded && noteViews.size == notes.size) {
             updateExistingNoteViews(notes)
@@ -239,6 +237,17 @@ class NoteStackView @JvmOverloads constructor(
                 if (btn.isVisible) {
                     btn.layout(0, currentTop, parentWidth, currentTop + btn.measuredHeight)
                 }
+            }
+
+            if (pendingExpandAnimation) {
+                pendingExpandAnimation = false
+                expandAnimator.startExpandAnimation(
+                    noteViews = noteViews,
+                    collapseButton = collapseButton,
+                    stackElementOffset = stackElementOffset,
+                    elementsElevation = elementsElevation,
+                    parentForPost = this
+                )
             }
         } else {
             val visibleCount = minOf(stackMaxVisible, noteViews.size)

@@ -4,5 +4,6 @@ import com.example.noteslist.domain.model.Note
 
 data class NoteStackItem(
     val notes: List<Note>,
-    val isExpanded: Boolean = false
+    val isExpanded: Boolean = false,
+    val shouldAnimateExpand: Boolean = false
 ) : ListItem

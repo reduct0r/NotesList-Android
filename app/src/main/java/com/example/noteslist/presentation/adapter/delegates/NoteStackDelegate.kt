@@ -42,7 +42,12 @@ class NoteStackDelegate(
 
         fun bind(item: NoteStackItem) {
             binding.noteStack.apply {
-                setNotes(item.notes, item.isExpanded, onNoteClick)
+                setNotes(
+                    notes = item.notes,
+                    expanded = item.isExpanded,
+                    shouldAnimateExpand = item.shouldAnimateExpand,
+                    onNoteClick = onNoteClick
+                )
 
                 onExpandRequest = {
                     onExpand(item)

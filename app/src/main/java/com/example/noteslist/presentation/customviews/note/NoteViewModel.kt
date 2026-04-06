@@ -20,6 +20,7 @@ class NoteViewModel : ViewModel() {
     val uiItems: StateFlow<List<ListItem>> = _uiItems.asStateFlow()
 
     private val expandedStacks = mutableMapOf<List<Long>, Boolean>()
+    private val pendingExpandAnimations = mutableSetOf<List<Long>>()
 
     init {
         updateUiItems()
@@ -27,15 +28,28 @@ class NoteViewModel : ViewModel() {
 
     private fun updateUiItems() {
         val baseItems = prepareUseCase(_allNotes.value)
+        val consumedAnimationKeys = mutableListOf<List<Long>>()
+
         val updatedItems = baseItems.map { item ->
             if (item is NoteStackItem) {
                 val key = item.notes.map { it.id }.sorted()
                 val isExpanded = expandedStacks[key] ?: false
-                item.copy(isExpanded = isExpanded)
+                val shouldAnimateExpand = isExpanded && pendingExpandAnimations.contains(key)
+
+                if (shouldAnimateExpand) {
+                    consumedAnimationKeys.add(key)
+                }
+
+                item.copy(
+                    isExpanded = isExpanded,
+                    shouldAnimateExpand = shouldAnimateExpand
+                )
             } else {
                 item
             }
         }
+
+        pendingExpandAnimations.removeAll(consumedAnimationKeys.toSet())
         _uiItems.value = updatedItems
     }
 
@@ -53,12 +67,14 @@ class NoteViewModel : ViewModel() {
     fun expandStack(target: NoteStackItem) {
         val key = target.notes.map { it.id }.sorted()
         expandedStacks[key] = true
+        pendingExpandAnimations.add(key)
         updateUiItems()
     }
 
     fun collapseStack(target: NoteStackItem) {
         val key = target.notes.map { it.id }.sorted()
         expandedStacks[key] = false
+        pendingExpandAnimations.remove(key)
         updateUiItems()
     }
 }
