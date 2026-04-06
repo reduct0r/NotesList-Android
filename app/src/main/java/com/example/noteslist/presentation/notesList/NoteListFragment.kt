@@ -1,9 +1,11 @@
 package com.example.noteslist.presentation.notesList
 
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -25,6 +27,23 @@ class NoteListFragment: Fragment() {
     private val viewModel: NoteListViewModel by viewModels()
 
     private lateinit var adapter: NoteListAdapter
+    private var pendingRecyclerState: Parcelable? = null
+    private var pendingWasAtBottom: Boolean? = null
+    private var isRecyclerStateRestored = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        pendingRecyclerState = savedInstanceState?.let {
+            BundleCompat.getParcelable(it, KEY_RECYCLER_STATE, Parcelable::class.java)
+        }
+        pendingWasAtBottom = savedInstanceState?.let {
+            if (it.containsKey(KEY_RECYCLER_WAS_AT_BOTTOM)) {
+                it.getBoolean(KEY_RECYCLER_WAS_AT_BOTTOM)
+            } else {
+                null
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -83,13 +102,68 @@ class NoteListFragment: Fragment() {
         lifecycleScope.launch {
             viewModel.uiItems.collect { items ->
                 adapter.submitList(items)
+                restoreRecyclerStateIfNeeded()
+            }
+        }
+    }
+
+    private fun restoreRecyclerStateIfNeeded() {
+        if (isRecyclerStateRestored) return
+
+        if (pendingWasAtBottom == true) {
+            restoreRecyclerToBottom()
+            return
+        }
+
+        val state = pendingRecyclerState ?: return
+
+        binding.recyclerView.post {
+            if (isRecyclerStateRestored) return@post
+            binding.recyclerView.layoutManager?.onRestoreInstanceState(state)
+            pendingRecyclerState = null
+            pendingWasAtBottom = null
+            isRecyclerStateRestored = true
+        }
+    }
+
+    private fun restoreRecyclerToBottom() {
+        binding.recyclerView.post {
+            if (isRecyclerStateRestored) return@post
+            val lastIndex = adapter.itemCount - 1
+            if (lastIndex >= 0) {
+                binding.recyclerView.scrollToPosition(lastIndex)
+                binding.recyclerView.post {
+                    binding.recyclerView.scrollToPosition(lastIndex)
+                    pendingRecyclerState = null
+                    pendingWasAtBottom = null
+                    isRecyclerStateRestored = true
+                }
+            } else {
+                pendingRecyclerState = null
+                pendingWasAtBottom = null
+                isRecyclerStateRestored = true
             }
         }
     }
 
     override fun onDestroyView() {
+        pendingRecyclerState = binding.recyclerView.layoutManager?.onSaveInstanceState()
+        pendingWasAtBottom = !binding.recyclerView.canScrollVertically(1)
+        isRecyclerStateRestored = false
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putParcelable(
+            KEY_RECYCLER_STATE,
+            pendingRecyclerState ?: _binding?.recyclerView?.layoutManager?.onSaveInstanceState()
+        )
+        outState.putBoolean(
+            KEY_RECYCLER_WAS_AT_BOTTOM,
+            pendingWasAtBottom ?: (_binding?.recyclerView?.canScrollVertically(1) == false)
+        )
     }
 
     private fun openDetails(note: Note?) {
@@ -106,5 +180,7 @@ class NoteListFragment: Fragment() {
 
     companion object {
         private const val FAB_SCROLL_HIDE_THRESHOLD = 0
+        private const val KEY_RECYCLER_STATE = "key_recycler_state"
+        private const val KEY_RECYCLER_WAS_AT_BOTTOM = "key_recycler_was_at_bottom"
     }
 }
