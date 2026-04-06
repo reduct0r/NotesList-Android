@@ -23,6 +23,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        window.decorView.post {
+            syncTwoPaneStateIfNeeded()
+        }
+
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (isTwoPaneMode()) {
@@ -95,6 +99,26 @@ class MainActivity : AppCompatActivity() {
 
     private fun isNoteDetailsPaneOpened(): Boolean {
         return isTwoPaneMode() && supportFragmentManager.findFragmentById(R.id.detail_container) != null
+    }
+
+    private fun syncTwoPaneStateIfNeeded() {
+        if (!isTwoPaneMode()) return
+
+        val navHost = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
+        val navController = navHost?.navController ?: return
+
+        if (navController.currentDestination?.id != R.id.noteDetailsFragment) return
+
+        val detailsFragment = navHost.childFragmentManager.fragments
+            .filterIsInstance<NoteDetailsFragment>()
+            .firstOrNull()
+
+        val note = detailsFragment?.arguments
+            ?.let(NoteDetailsFragmentArgs::fromBundle)
+            ?.note
+
+        navController.popBackStack(R.id.noteListFragment, false)
+        openNoteDetailsPane(note)
     }
 
     private fun showExitConfirmationByDoubleBack() {
