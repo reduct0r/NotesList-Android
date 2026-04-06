@@ -78,8 +78,6 @@ class NoteListFragment: Fragment() {
                 adapter.submitList(items)
             }
         }
-
-
     }
 
     override fun onDestroyView() {
