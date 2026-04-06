@@ -42,7 +42,7 @@ class NoteListFragment: Fragment() {
         (binding.recyclerView.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
 
         binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            private val threshold = 10
+            private val threshold = FAB_SCROLL_HIDE_THRESHOLD
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 val fab = binding.fab
                 when {
@@ -103,5 +103,9 @@ class NoteListFragment: Fragment() {
         val direction = NoteListFragmentDirections
             .actionNoteListFragmentToNoteDetailsFragment(note)
         findNavController().navigate(direction)
+    }
+
+    companion object {
+        private const val FAB_SCROLL_HIDE_THRESHOLD = 0
     }
 }

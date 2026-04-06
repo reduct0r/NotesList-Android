@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.example.noteslist.R
@@ -111,13 +112,21 @@ fun NoteDetailsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (isNewNote) "Новая заметка" else "Детали заметки") },
+                title = {
+                    Text(
+                        if (isNewNote) stringResource(R.string.note_details_title_new)
+                        else stringResource(R.string.note_details_title_existing)
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = {
                         if (hasChanges) showUnsavedDialog = true
                         else onNavigateBack()
                     }) {
-                        Icon(painterResource(id = R.drawable.outline_book_24), contentDescription = "Назад")
+                        Icon(
+                            painterResource(id = R.drawable.outline_book_24),
+                            contentDescription = stringResource(R.string.back_description)
+                        )
                     }
                 }
             )
@@ -128,18 +137,18 @@ fun NoteDetailsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .padding(16.dp)
+                    .padding(UiDimen.SCREEN_PADDING)
             ) {
                 Column(
                     modifier = Modifier
-                        .weight(1.2f)
+                        .weight(UiDimen.LANDSCAPE_LEFT_WEIGHT)
                         .fillMaxHeight(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(UiDimen.LANDSCAPE_SPACING)
                 ) {
                     OutlinedTextField(
                         value = title.value,
                         onValueChange = { title.value = it },
-                        label = { Text("Заголовок *") },
+                        label = { Text(stringResource(R.string.note_title_label)) },
                         modifier = Modifier.fillMaxWidth(),
                         isError = title.value.isBlank(),
                         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
@@ -148,7 +157,7 @@ fun NoteDetailsScreen(
 
                     if (title.value.isBlank()) {
                         Text(
-                            text = "Необходимо заполнить",
+                            text = stringResource(R.string.note_title_required_error),
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodySmall
                         )
@@ -157,35 +166,39 @@ fun NoteDetailsScreen(
                     OutlinedTextField(
                         value = content.value,
                         onValueChange = { content.value = it },
-                        label = { Text("Текст заметки") },
+                        label = { Text(stringResource(R.string.note_content_label)) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f),
-                        maxLines = 10,
+                            .weight(UiDimen.CONTENT_FIELD_WEIGHT),
+                        maxLines = UiDimen.CONTENT_MAX_LINES,
                         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
                     )
                 }
 
-                Spacer(Modifier.width(12.dp))
+                Spacer(Modifier.width(UiDimen.LANDSCAPE_COLUMN_SPACER))
 
                 Column(
                     modifier = Modifier
-                        .weight(0.8f)
+                        .weight(UiDimen.LANDSCAPE_RIGHT_WEIGHT)
                         .fillMaxHeight(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(UiDimen.LANDSCAPE_SPACING)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
                             checked = isImportant.value,
                             onCheckedChange = { isImportant.value = it }
                         )
-                        Spacer(Modifier.width(8.dp))
-                        Text("Важная заметка")
+                        Spacer(Modifier.width(UiDimen.CHECKBOX_TEXT_SPACER))
+                        Text(stringResource(R.string.note_important_label))
                     }
 
                     if (!isNewNote) {
                         Text(
-                            text = "Создано: ${currentNote?.getDateString()} ${currentNote?.getTimeString()}",
+                            text = stringResource(
+                                R.string.note_created_format,
+                                currentNote?.getDateString().orEmpty(),
+                                currentNote?.getTimeString().orEmpty()
+                            ),
                             style = MaterialTheme.typography.bodyMedium
                         )
 
@@ -194,18 +207,18 @@ fun NoteDetailsScreen(
                                 checked = isRead.value,
                                 onCheckedChange = { isRead.value = it }
                             )
-                            Spacer(Modifier.width(8.dp))
-                            Text("Прочитано")
+                            Spacer(Modifier.width(UiDimen.CHECKBOX_TEXT_SPACER))
+                            Text(stringResource(R.string.note_read_label))
                         }
                     }
 
-                    Spacer(Modifier.weight(1f))
+                    Spacer(Modifier.weight(UiDimen.BOTTOM_SPACER_WEIGHT))
 
                     Button(
                         onClick = { saveNote() },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(if (isNewNote) "Добавить" else "Сохранить")
+                        Text(if (isNewNote) stringResource(R.string.add) else stringResource(R.string.save))
                     }
                 }
             }
@@ -214,15 +227,15 @@ fun NoteDetailsScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .padding(16.dp)
+                    .padding(UiDimen.SCREEN_PADDING)
                     .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(UiDimen.PORTRAIT_SPACING)
             ) {
 
                 OutlinedTextField(
                     value = title.value,
                     onValueChange = { title.value = it },
-                    label = { Text("Заголовок *") },
+                    label = { Text(stringResource(R.string.note_title_label)) },
                     modifier = Modifier.fillMaxWidth(),
                     isError = title.value.isBlank(),
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
@@ -231,7 +244,7 @@ fun NoteDetailsScreen(
 
                 if (title.value.isBlank()) {
                     Text(
-                        text = "Необходимо заполнить",
+                        text = stringResource(R.string.note_title_required_error),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -240,9 +253,9 @@ fun NoteDetailsScreen(
                 OutlinedTextField(
                     value = content.value,
                     onValueChange = { content.value = it },
-                    label = { Text("Текст заметки") },
-                    modifier = Modifier.fillMaxWidth().height(200.dp),
-                    maxLines = 10,
+                    label = { Text(stringResource(R.string.note_content_label)) },
+                    modifier = Modifier.fillMaxWidth().height(UiDimen.PORTRAIT_CONTENT_HEIGHT),
+                    maxLines = UiDimen.CONTENT_MAX_LINES,
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
                 )
 
@@ -251,13 +264,17 @@ fun NoteDetailsScreen(
                         checked = isImportant.value,
                         onCheckedChange = { isImportant.value = it }
                     )
-                    Spacer(Modifier.width(8.dp))
-                    Text("Важная заметка")
+                    Spacer(Modifier.width(UiDimen.CHECKBOX_TEXT_SPACER))
+                    Text(stringResource(R.string.note_important_label))
                 }
 
                 if (!isNewNote) {
                     Text(
-                        text = "Создано: ${currentNote?.getDateString()} ${currentNote?.getTimeString()}",
+                        text = stringResource(
+                            R.string.note_created_format,
+                            currentNote?.getDateString().orEmpty(),
+                            currentNote?.getTimeString().orEmpty()
+                        ),
                         style = MaterialTheme.typography.bodyMedium
                     )
 
@@ -266,18 +283,18 @@ fun NoteDetailsScreen(
                             checked = isRead.value,
                             onCheckedChange = { isRead.value = it }
                         )
-                        Spacer(Modifier.width(8.dp))
-                        Text("Прочитано")
+                        Spacer(Modifier.width(UiDimen.CHECKBOX_TEXT_SPACER))
+                        Text(stringResource(R.string.note_read_label))
                     }
                 }
 
-                Spacer(Modifier.weight(1f))
+                Spacer(Modifier.weight(UiDimen.BOTTOM_SPACER_WEIGHT))
 
                 Button(
                     onClick = { saveNote() },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(if (isNewNote) "Добавить" else "Сохранить")
+                    Text(if (isNewNote) stringResource(R.string.add) else stringResource(R.string.save))
                 }
             }
         }
@@ -286,18 +303,34 @@ fun NoteDetailsScreen(
     if (showUnsavedDialog) {
         AlertDialog(
             onDismissRequest = { showUnsavedDialog = false },
-            title = { Text("Несохранённые изменения") },
-            text = { Text("Закрыть без сохранения?") },
+            title = { Text(stringResource(R.string.unsaved_changes_title)) },
+            text = { Text(stringResource(R.string.unsaved_changes_message)) },
             confirmButton = {
                 TextButton(onClick = { onNavigateBack() }) {
-                    Text("Закрыть")
+                    Text(stringResource(R.string.close))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showUnsavedDialog = false }) {
-                    Text("Отмена")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
     }
 }
+
+private object UiDimen {
+    val SCREEN_PADDING = 16.dp
+    val PORTRAIT_SPACING = 16.dp
+    val LANDSCAPE_SPACING = 12.dp
+    val CHECKBOX_TEXT_SPACER = 8.dp
+    val LANDSCAPE_COLUMN_SPACER = 12.dp
+    val PORTRAIT_CONTENT_HEIGHT = 200.dp
+
+    const val CONTENT_MAX_LINES = 10
+    const val CONTENT_FIELD_WEIGHT = 1f
+    const val BOTTOM_SPACER_WEIGHT = 1f
+    const val LANDSCAPE_LEFT_WEIGHT = 1.2f
+    const val LANDSCAPE_RIGHT_WEIGHT = 0.8f
+}
+

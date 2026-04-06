@@ -4,4 +4,23 @@
     <string name="note_unread">Unread</string>
     <string name="collapse">Collapse</string>
     <string name="add_new_note_button">add new note button</string>
+
+    <string name="note_details_title_new">Новая заметка</string>
+    <string name="note_details_title_existing">Детали заметки</string>
+    <string name="back_description">Назад</string>
+
+    <string name="note_title_label">Заголовок *</string>
+    <string name="note_title_required_error">Необходимо заполнить</string>
+    <string name="note_content_label">Текст заметки</string>
+    <string name="note_important_label">Важная заметка</string>
+    <string name="note_read_label">Прочитано</string>
+    <string name="note_created_format">Создано: %1$s %2$s</string>
+
+    <string name="add">Добавить</string>
+    <string name="save">Сохранить</string>
+
+    <string name="unsaved_changes_title">Несохранённые изменения</string>
+    <string name="unsaved_changes_message">Закрыть без сохранения?</string>
+    <string name="close">Закрыть</string>
+    <string name="cancel">Отмена</string>
 </resources>

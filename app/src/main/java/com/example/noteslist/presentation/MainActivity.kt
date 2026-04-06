@@ -17,6 +17,7 @@ import com.example.noteslist.presentation.noteDetails.NoteDetailsFragmentArgs
 
 class MainActivity : AppCompatActivity() {
     private var lastBackPressedAt = 0L
+    private var shouldShowExitDialogAfterPaneClose = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,8 +30,19 @@ class MainActivity : AppCompatActivity() {
                         isEnabled = false
                         onBackPressedDispatcher.onBackPressed()
                         isEnabled = true
+
+                        if (!isNoteDetailsPaneOpened()) {
+                            shouldShowExitDialogAfterPaneClose = true
+                        }
                         return
                     }
+
+                    if (shouldShowExitDialogAfterPaneClose) {
+                        shouldShowExitDialogAfterPaneClose = false
+                        showExitConfirmationDialog()
+                        return
+                    }
+
                     showExitConfirmationByDoubleBack()
                     return
                 }
@@ -58,6 +70,7 @@ class MainActivity : AppCompatActivity() {
 
     fun openNoteDetailsPane(note: Note?) {
         if (!isTwoPaneMode()) return
+        shouldShowExitDialogAfterPaneClose = false
 
         val fragment = NoteDetailsFragment().apply {
             arguments = NoteDetailsFragmentArgs(note).toBundle()
@@ -90,12 +103,7 @@ class MainActivity : AppCompatActivity() {
         lastBackPressedAt = now
 
         if (isSecondBackClick) {
-            AlertDialog.Builder(this@MainActivity)
-                .setTitle("Выход")
-                .setMessage("Закрыть приложение?")
-                .setPositiveButton("Да") { _, _ -> finish() }
-                .setNegativeButton("Нет", null)
-                .show()
+            showExitConfirmationDialog()
         } else {
             Toast.makeText(
                 this@MainActivity,
@@ -103,6 +111,15 @@ class MainActivity : AppCompatActivity() {
                 Toast.LENGTH_SHORT
             ).show()
         }
+    }
+
+    private fun showExitConfirmationDialog() {
+        AlertDialog.Builder(this@MainActivity)
+            .setTitle("Выход")
+            .setMessage("Закрыть приложение?")
+            .setPositiveButton("Да") { _, _ -> finish() }
+            .setNegativeButton("Нет", null)
+            .show()
     }
 
     companion object {
