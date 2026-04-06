@@ -13,7 +13,6 @@ import androidx.core.view.isVisible
 import com.example.noteslist.R
 import com.example.noteslist.domain.model.Note
 import com.example.noteslist.domain.model.getTimeString
-import com.example.noteslist.presentation.customviews.noteStack.StackExpandAnimator
 import com.example.noteslist.presentation.customviews.note.NoteView
 
 class NoteStackView @JvmOverloads constructor(
