@@ -1,4 +1,4 @@
-package com.example.noteslist.presentation.customviews.note
+package com.example.noteslist.presentation.notesList
 
 import androidx.lifecycle.ViewModel
 import com.example.noteslist.data.repository.NoteRepositoryImpl
@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class NoteViewModel : ViewModel() {
+class NoteListViewModel : ViewModel() {
 
     private val repository = NoteRepositoryImpl()
     private val prepareUseCase = PrepareNoteListUseCase()
