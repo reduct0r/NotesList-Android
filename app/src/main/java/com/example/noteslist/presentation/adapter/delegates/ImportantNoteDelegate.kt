@@ -10,7 +10,8 @@ import com.example.noteslist.domain.model.list.ImportantNoteItem
 import com.example.noteslist.domain.model.list.ListItem
 
 class ImportantNoteDelegate(
-    private val onClick: (Note) -> Unit
+    private val onClick: (Note) -> Unit,
+    private val onLongClick: (Note) -> Unit
 ) : AdapterDelegate<ListItem> {
 
     override fun isForViewType(items: List<ListItem>, position: Int): Boolean =
@@ -20,7 +21,7 @@ class ImportantNoteDelegate(
         val binding = ItemImportantNoteBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-        return ImportantNoteViewHolder(binding, onClick)
+        return ImportantNoteViewHolder(binding, onClick, onLongClick)
     }
 
     override fun onBindViewHolder(
@@ -34,12 +35,17 @@ class ImportantNoteDelegate(
 
     private class ImportantNoteViewHolder(
         private val binding: ItemImportantNoteBinding,
-        private val onClick: (Note) -> Unit
+        private val onClick: (Note) -> Unit,
+        private val onLongClick: (Note) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: ImportantNoteItem) {
             val note = item.note
             binding.noteView.setOnClickListener { onClick(note) }
+            binding.noteView.setOnLongClickListener {
+                onLongClick(note)
+                true
+            }
 
             with(binding.noteView) {
                 title = note.title

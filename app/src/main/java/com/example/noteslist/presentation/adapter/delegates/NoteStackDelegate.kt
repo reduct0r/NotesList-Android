@@ -10,6 +10,7 @@ import com.example.noteslist.domain.model.list.NoteStackItem
 
 class NoteStackDelegate(
     private val onNoteClick: (Note) -> Unit,
+    private val onNoteLongClick: (Note) -> Unit,
     private val onExpand: (NoteStackItem) -> Unit,
     private val onCollapse: (NoteStackItem) -> Unit
 ) : AdapterDelegate<ListItem> {
@@ -21,7 +22,7 @@ class NoteStackDelegate(
         val binding = ItemNoteStackBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
-        return NoteStackViewHolder(binding, onNoteClick, onExpand, onCollapse)
+        return NoteStackViewHolder(binding, onNoteClick, onNoteLongClick, onExpand, onCollapse)
     }
 
     override fun onBindViewHolder(
@@ -36,6 +37,7 @@ class NoteStackDelegate(
     private class NoteStackViewHolder(
         private val binding: ItemNoteStackBinding,
         private val onNoteClick: (Note) -> Unit,
+        private val onNoteLongClick: (Note) -> Unit,
         private val onExpand: (NoteStackItem) -> Unit,
         private val onCollapse: (NoteStackItem) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
@@ -46,7 +48,8 @@ class NoteStackDelegate(
                     notes = item.notes,
                     expanded = item.isExpanded,
                     shouldAnimateExpand = item.shouldAnimateExpand,
-                    onNoteClick = onNoteClick
+                    onNoteClick = onNoteClick,
+                    onNoteLongClick = onNoteLongClick
                 )
 
                 onExpandRequest = {

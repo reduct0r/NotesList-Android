@@ -15,15 +15,17 @@ import com.example.noteslist.presentation.adapter.delegates.NoteStackDelegate
 
 class NoteListAdapter(
     private val onNoteClick: (Note) -> Unit,
+    private val onNoteLongClick: (Note) -> Unit,
     private val onExpand: (NoteStackItem) -> Unit,
     private val onCollapse: (NoteStackItem) -> Unit
 ) : ListAdapter<ListItem, RecyclerView.ViewHolder>(DiffCallback()) {
 
     private val delegates = listOf(
         DateHeaderDelegate(),
-        ImportantNoteDelegate(onNoteClick),
+        ImportantNoteDelegate(onClick = onNoteClick, onLongClick = onNoteLongClick),
         NoteStackDelegate(
             onNoteClick = onNoteClick,
+            onNoteLongClick = onNoteLongClick,
             onExpand = onExpand,
             onCollapse = onCollapse
         )

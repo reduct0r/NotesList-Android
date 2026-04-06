@@ -70,6 +70,9 @@ class NoteListFragment: Fragment() {
                     .actionNoteListFragmentToNoteDetailsFragment(note)
                 findNavController().navigate(direction)
             },
+            onNoteLongClick = { note ->
+                viewModel.toggleNoteReadStatus(note.id)
+            },
             onExpand = { viewModel.expandStack(it) },
             onCollapse = { viewModel.collapseStack(it) }
         )
