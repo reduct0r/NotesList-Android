@@ -1,13 +1,12 @@
 package com.example.noteslist.presentation.noteDetails
 
-import android.graphics.drawable.Drawable
+import android.content.res.Configuration
 import androidx.activity.compose.BackHandler
-import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -36,12 +35,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.noteslist.R
 import com.example.noteslist.domain.model.Note
@@ -57,19 +53,32 @@ fun NoteDetailsScreen(
     onNavigateBack: () -> Unit
 ) {
     val isNewNote = initialNote?.isNew() ?: true
+    val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val title = remember { mutableStateOf(initialNote?.title ?: "") }
     val content = remember { mutableStateOf(initialNote?.content ?: "") }
     val isImportant = remember { mutableStateOf(initialNote?.isImportant ?: false) }
     val isRead = remember { mutableStateOf(initialNote?.isRead ?: false) }
 
     var showUnsavedDialog by remember { mutableStateOf(false) }
-    var showExitConfirmDialog by remember { mutableStateOf(false) }
 
     val hasChanges = remember(title.value, content.value, isImportant.value, isRead.value) {
         title.value != (initialNote?.title ?: "") ||
                 content.value != (initialNote?.content ?: "") ||
                 isImportant.value != (initialNote?.isImportant ?: false) ||
                 isRead.value != (initialNote?.isRead ?: false)
+    }
+
+    fun saveNote() {
+        if (title.value.isBlank()) return
+
+        val noteToSave = (initialNote ?: Note()).copy(
+            title = title.value.trim(),
+            content = content.value.trim(),
+            isImportant = isImportant.value,
+            isRead = isRead.value
+        )
+
+        viewModel.saveNote(noteToSave)
     }
 
     LaunchedEffect(viewModel) {
@@ -103,85 +112,162 @@ fun NoteDetailsScreen(
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
+        if (isLandscape) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .weight(1.2f)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedTextField(
+                        value = title.value,
+                        onValueChange = { title.value = it },
+                        label = { Text("Заголовок *") },
+                        modifier = Modifier.fillMaxWidth(),
+                        isError = title.value.isBlank(),
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                        singleLine = true
+                    )
 
-            OutlinedTextField(
-                value = title.value,
-                onValueChange = { title.value = it },
-                label = { Text("Заголовок *") },
-                modifier = Modifier.fillMaxWidth(),
-                isError = title.value.isBlank(),
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                singleLine = true
-            )
+                    if (title.value.isBlank()) {
+                        Text(
+                            text = "Необходимо заполнить",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
 
-            if (title.value.isBlank()) {
-                Text(
-                    text = "Необходимо заполнить",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
-                )
+                    OutlinedTextField(
+                        value = content.value,
+                        onValueChange = { content.value = it },
+                        label = { Text("Текст заметки") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        maxLines = 10,
+                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
+                    )
+                }
+
+                Spacer(Modifier.width(12.dp))
+
+                Column(
+                    modifier = Modifier
+                        .weight(0.8f)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = isImportant.value,
+                            onCheckedChange = { isImportant.value = it }
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text("Важная заметка")
+                    }
+
+                    if (!isNewNote) {
+                        Text(
+                            text = "Создано: ${initialNote.getDateString()} ${initialNote.getTimeString()}",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Checkbox(
+                                checked = isRead.value,
+                                onCheckedChange = { isRead.value = it }
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text("Прочитано")
+                        }
+                    }
+
+                    Spacer(Modifier.weight(1f))
+
+                    Button(
+                        onClick = { saveNote() },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(if (isNewNote) "Добавить" else "Сохранить")
+                    }
+                }
             }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
 
-            OutlinedTextField(
-                value = content.value,
-                onValueChange = { content.value = it },
-                label = { Text("Текст заметки") },
-                modifier = Modifier.fillMaxWidth().height(200.dp),
-                maxLines = 10,
-                keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
-            )
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(
-                    checked = isImportant.value,
-                    onCheckedChange = { isImportant.value = it }
+                OutlinedTextField(
+                    value = title.value,
+                    onValueChange = { title.value = it },
+                    label = { Text("Заголовок *") },
+                    modifier = Modifier.fillMaxWidth(),
+                    isError = title.value.isBlank(),
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+                    singleLine = true
                 )
-                Spacer(Modifier.width(8.dp))
-                Text("Важная заметка")
-            }
 
-            if (!isNewNote) {
-                Text(
-                    text = "Создано: ${initialNote.getDateString()} ${initialNote.getTimeString()}",
-                    style = MaterialTheme.typography.bodyMedium
+                if (title.value.isBlank()) {
+                    Text(
+                        text = "Необходимо заполнить",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
+                OutlinedTextField(
+                    value = content.value,
+                    onValueChange = { content.value = it },
+                    label = { Text("Текст заметки") },
+                    modifier = Modifier.fillMaxWidth().height(200.dp),
+                    maxLines = 10,
+                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
                 )
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(
-                        checked = isRead.value,
-                        onCheckedChange = { isRead.value = it }
+                        checked = isImportant.value,
+                        onCheckedChange = { isImportant.value = it }
                     )
                     Spacer(Modifier.width(8.dp))
-                    Text("Прочитано")
+                    Text("Важная заметка")
                 }
-            }
 
-            Spacer(Modifier.weight(1f))
-
-            Button(
-                onClick = {
-                    if (title.value.isBlank()) return@Button
-
-                    val noteToSave = (initialNote ?: Note()).copy(
-                        title = title.value.trim(),
-                        content = content.value.trim(),
-                        isImportant = isImportant.value,
-                        isRead = isRead.value
+                if (!isNewNote) {
+                    Text(
+                        text = "Создано: ${initialNote.getDateString()} ${initialNote.getTimeString()}",
+                        style = MaterialTheme.typography.bodyMedium
                     )
 
-                    viewModel.saveNote(noteToSave)
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(if (isNewNote) "Добавить" else "Сохранить")
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = isRead.value,
+                            onCheckedChange = { isRead.value = it }
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text("Прочитано")
+                    }
+                }
+
+                Spacer(Modifier.weight(1f))
+
+                Button(
+                    onClick = { saveNote() },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(if (isNewNote) "Добавить" else "Сохранить")
+                }
             }
         }
     }
