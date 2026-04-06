@@ -71,6 +71,8 @@ class NoteStackView @JvmOverloads constructor(
         shouldAnimateExpand: Boolean,
         onNoteClick: (Note) -> Unit
     ) {
+        isSingleNote = notes.size == 1
+
         val targetExpanded = expanded || notes.size == 1
         shouldAnimateNextExpand = (shouldAnimateExpand) &&
                 !isExpanded &&
@@ -78,7 +80,7 @@ class NoteStackView @JvmOverloads constructor(
                 notes.size > 1
 
         if (isExpanded && targetExpanded && noteViews.size == notes.size) {
-            updateExistingNoteViews(notes)
+            updateExistingNoteViews(notes, onNoteClick)
             return
         }
 
@@ -100,7 +102,10 @@ class NoteStackView @JvmOverloads constructor(
         isExpanded = targetExpanded
     }
 
-    private fun updateExistingNoteViews(newNotes: List<Note>) {
+    private fun updateExistingNoteViews(
+        newNotes: List<Note>,
+        onNoteClick: (Note) -> Unit
+    ) {
         val sorted = newNotes.sortedByDescending { it.createdAt }
         noteViews.forEachIndexed { index, noteView ->
             val note = sorted[index]
@@ -110,6 +115,7 @@ class NoteStackView @JvmOverloads constructor(
                 time = note.getTimeString()
                 isImportant = note.isImportant
                 isRead = note.isRead
+                setOnClickListener { onNoteClick(note) }
             }
         }
     }
