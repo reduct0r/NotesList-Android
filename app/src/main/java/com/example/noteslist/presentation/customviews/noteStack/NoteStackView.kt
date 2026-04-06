@@ -132,15 +132,15 @@ class NoteStackView @JvmOverloads constructor(
 
                 if (startingExpandAnimation) {
                     collapseButton?.apply {
-                        alpha = 0f
-                        scaleX = 0.7f
-                        scaleY = 0.7f
+                        alpha = COLLAPSE_BUTTON_HIDDEN_ALPHA
+                        scaleX = COLLAPSE_BUTTON_HIDDEN_SCALE
+                        scaleY = COLLAPSE_BUTTON_HIDDEN_SCALE
                     }
                 } else {
                     collapseButton?.apply {
-                        alpha = 1f
-                        scaleX = 1f
-                        scaleY = 1f
+                        alpha = COLLAPSE_BUTTON_VISIBLE_ALPHA
+                        scaleX = COLLAPSE_BUTTON_VISIBLE_SCALE
+                        scaleY = COLLAPSE_BUTTON_VISIBLE_SCALE
                     }
                 }
             }
@@ -277,6 +277,11 @@ class NoteStackView @JvmOverloads constructor(
         private const val DEFAULT_MAX_VISIBLE = 3
         private const val DEFAULT_STACK_OFFSET_DP = 20
         private const val DEFAULT_ELEVATION = 4
+
+        private const val COLLAPSE_BUTTON_HIDDEN_ALPHA = 0f
+        private const val COLLAPSE_BUTTON_VISIBLE_ALPHA = 1f
+        private const val COLLAPSE_BUTTON_HIDDEN_SCALE = 0.7f
+        private const val COLLAPSE_BUTTON_VISIBLE_SCALE = 1f
 
         private const val COLLAPSE_TEXT_SIZE_SP = 15f
         private const val COLLAPSE_PADDING_HORIZONTAL = 16

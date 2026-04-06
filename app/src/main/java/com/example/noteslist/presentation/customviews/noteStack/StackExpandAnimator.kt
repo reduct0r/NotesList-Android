@@ -10,7 +10,12 @@ import com.example.noteslist.presentation.customviews.note.NoteView
 
 class StackExpandAnimator {
 
-    private val interpolator = PathInterpolator(0.4f, 0.1f, 0.2f, 1f)
+    private val interpolator = PathInterpolator(
+        BEZIER_X1,
+        BEZIER_Y1,
+        BEZIER_X2,
+        BEZIER_Y2
+    )
 
     fun startExpandAnimation(
         noteViews: List<NoteView>,
@@ -22,12 +27,12 @@ class StackExpandAnimator {
         if (noteViews.isEmpty()) return
 
         val n = noteViews.size
-        val baseDuration = 200
-        val step = 40
-        val maxDuration = 800
-        val totalDuration = (baseDuration + n * step).coerceAtMost(maxDuration)
-        val lastStartDelay = (n - 1) * 20
-        val animDuration = (totalDuration - lastStartDelay).coerceAtLeast(100).toLong()
+        val totalDuration = (BASE_ANIMATION_DURATION_MS + n * ANIMATION_STEP_MS)
+            .coerceAtMost(MAX_ANIMATION_DURATION_MS)
+        val lastStartDelay = (n - 1) * ITEM_START_DELAY_STEP_MS
+        val animDuration = (totalDuration - lastStartDelay)
+            .coerceAtLeast(MIN_ITEM_ANIMATION_DURATION_MS)
+            .toLong()
 
         noteViews.forEachIndexed { index, child ->
             child.elevation = (noteViews.size - index) + elementsElevation.toFloat()
@@ -43,7 +48,7 @@ class StackExpandAnimator {
 
             val animator = ObjectAnimator.ofFloat(noteView, View.TRANSLATION_Y, initTransY, 0f).apply {
                 duration = animDuration
-                startDelay = (i * 20L)
+                startDelay = (i * ITEM_START_DELAY_STEP_MS).toLong()
                 this.interpolator = this@StackExpandAnimator.interpolator
 
                 if (i == n - 1) {
@@ -51,7 +56,7 @@ class StackExpandAnimator {
                         override fun onAnimationEnd(animation: Animator) {
                             parentForPost.postDelayed({
                                 animateCollapseButtonIn(collapseButton)
-                            }, 100)
+                            }, COLLAPSE_BUTTON_APPEAR_DELAY_MS)
                         }
                     })
                 }
@@ -62,15 +67,50 @@ class StackExpandAnimator {
 
     private fun animateCollapseButtonIn(btn: TextView?) {
         btn?.let {
-            val alphaAnim = ObjectAnimator.ofFloat(it, View.ALPHA, 0f, 1f)
-            val scaleXAnim = ObjectAnimator.ofFloat(it, View.SCALE_X, 0.7f, 1f)
-            val scaleYAnim = ObjectAnimator.ofFloat(it, View.SCALE_Y, 0.7f, 1f)
+            val alphaAnim = ObjectAnimator.ofFloat(
+                it,
+                View.ALPHA,
+                COLLAPSE_BUTTON_START_ALPHA,
+                COLLAPSE_BUTTON_END_ALPHA
+            )
+            val scaleXAnim = ObjectAnimator.ofFloat(
+                it,
+                View.SCALE_X,
+                COLLAPSE_BUTTON_START_SCALE,
+                COLLAPSE_BUTTON_END_SCALE
+            )
+            val scaleYAnim = ObjectAnimator.ofFloat(
+                it,
+                View.SCALE_Y,
+                COLLAPSE_BUTTON_START_SCALE,
+                COLLAPSE_BUTTON_END_SCALE
+            )
 
             listOf(alphaAnim, scaleXAnim, scaleYAnim).forEach { anim ->
-                anim.duration = 200L
+                anim.duration = COLLAPSE_BUTTON_ANIMATION_DURATION_MS
                 anim.interpolator = interpolator
                 anim.start()
             }
         }
+    }
+
+    companion object {
+        private const val BASE_ANIMATION_DURATION_MS = 200
+        private const val ANIMATION_STEP_MS = 40
+        private const val MAX_ANIMATION_DURATION_MS = 800
+        private const val ITEM_START_DELAY_STEP_MS = 20
+        private const val MIN_ITEM_ANIMATION_DURATION_MS = 100
+
+        private const val COLLAPSE_BUTTON_APPEAR_DELAY_MS = 100L
+        private const val COLLAPSE_BUTTON_ANIMATION_DURATION_MS = 200L
+        private const val COLLAPSE_BUTTON_START_ALPHA = 0f
+        private const val COLLAPSE_BUTTON_END_ALPHA = 1f
+        private const val COLLAPSE_BUTTON_START_SCALE = 0.7f
+        private const val COLLAPSE_BUTTON_END_SCALE = 1f
+
+        private const val BEZIER_X1 = 0.4f
+        private const val BEZIER_Y1 = 0.1f
+        private const val BEZIER_X2 = 0.2f
+        private const val BEZIER_Y2 = 1f
     }
 }
