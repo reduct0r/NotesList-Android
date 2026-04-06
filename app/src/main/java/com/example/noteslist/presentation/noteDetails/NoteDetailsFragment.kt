@@ -8,13 +8,11 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 
 class NoteDetailsFragment: Fragment() {
     private val viewModel: NoteDetailsViewModel by viewModels()
-
-    private val noteId: Int by lazy {
-        arguments?.getInt("noteId") ?: -1
-    }
+    private val args: NoteDetailsFragmentArgs by navArgs()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -23,11 +21,9 @@ class NoteDetailsFragment: Fragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                val note = viewModel.getNoteById(noteId)
-
                 NoteDetailsScreen(
                     viewModel = viewModel,
-                    initialNote = note,
+                    initialNote = args.note,
                     onNavigateBack = { findNavController().popBackStack() }
                 )
             }

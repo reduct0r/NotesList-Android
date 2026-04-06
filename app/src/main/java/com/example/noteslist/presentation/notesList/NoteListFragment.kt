@@ -59,11 +59,17 @@ class NoteListFragment: Fragment() {
         })
 
         binding.fab.setOnClickListener {
-            findNavController().navigate(R.id.noteDetailsFragment)
+            val direction = NoteListFragmentDirections
+                .actionNoteListFragmentToNoteDetailsFragment(null)
+            findNavController().navigate(direction)
         }
 
         adapter = NoteListAdapter(
-            onNoteClick = { viewModel.toggleNoteReadStatus(it.id) },
+            onNoteClick = { note ->
+                val direction = NoteListFragmentDirections
+                    .actionNoteListFragmentToNoteDetailsFragment(note)
+                findNavController().navigate(direction)
+            },
             onExpand = { viewModel.expandStack(it) },
             onCollapse = { viewModel.collapseStack(it) }
         )

@@ -162,11 +162,6 @@ fun NoteDetailsScreen(
                     Spacer(Modifier.width(8.dp))
                     Text("Прочитано")
                 }
-                Text(
-                    text = "Отметка о прочтении также работает через long tap в списке",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray
-                )
             }
 
             Spacer(Modifier.weight(1f))

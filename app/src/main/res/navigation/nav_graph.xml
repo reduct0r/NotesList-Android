@@ -7,12 +7,24 @@
     <fragment
         android:id="@+id/noteListFragment"
         android:name="com.example.noteslist.presentation.notesList.NoteListFragment"
-        android:label="Notes List" />
+        android:label="Notes List">
+
+        <action
+            android:id="@+id/action_noteListFragment_to_noteDetailsFragment"
+            app:destination="@id/noteDetailsFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/noteDetailsFragment"
         android:name="com.example.noteslist.presentation.noteDetails.NoteDetailsFragment"
-        android:label="Note Details" />
+        android:label="Note Details">
+
+        <argument
+            android:name="note"
+            app:argType="com.example.noteslist.domain.model.Note"
+            app:nullable="true"
+            android:defaultValue="@null" />
+    </fragment>
 
 
 </navigation>

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.noteslist.data.repository.NoteRepositoryImpl
 import com.example.noteslist.domain.model.Note
+import com.example.noteslist.domain.model.isNew
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -17,17 +18,13 @@ class NoteDetailsViewModel : ViewModel() {
 
     fun saveNote(note: Note) {
         viewModelScope.launch {
-            if (note.id <= 0L) {
+            if (note.isNew()) {
                 repository.addNote(note.copy(id = System.currentTimeMillis()))
             } else {
                 repository.updateNote(note)
             }
             _events.emit(UiEvent.NavigateBack)
         }
-    }
-
-    fun getNoteById(noteId: Int): Note? {
-        return repository.notes.value.find { it.id.toInt() == noteId }
     }
 
     sealed interface UiEvent {
