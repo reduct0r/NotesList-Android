@@ -1,21 +1,24 @@
 package com.example.noteslist.presentation.notesList
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.noteslist.data.repository.NoteRepositoryImpl
+import com.example.noteslist.domain.model.Note
 import com.example.noteslist.domain.model.list.ListItem
 import com.example.noteslist.domain.model.list.NoteStackItem
 import com.example.noteslist.domain.usecase.PrepareNoteListUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class NoteListViewModel : ViewModel() {
 
-    private val repository = NoteRepositoryImpl()
+    private val repository = NoteRepositoryImpl
     private val prepareUseCase = PrepareNoteListUseCase()
 
-    private val _allNotes = MutableStateFlow(repository.getAllNotes())
     private val _uiItems = MutableStateFlow<List<ListItem>>(emptyList())
+    private var allNotes: List<Note> = emptyList()
 
     val uiItems: StateFlow<List<ListItem>> = _uiItems.asStateFlow()
 
@@ -23,11 +26,16 @@ class NoteListViewModel : ViewModel() {
     private val pendingExpandAnimations = mutableSetOf<List<Long>>()
 
     init {
-        updateUiItems()
+        viewModelScope.launch {
+            repository.notes.collect { notes ->
+                allNotes = notes
+                updateUiItems()
+            }
+        }
     }
 
     private fun updateUiItems() {
-        val baseItems = prepareUseCase(_allNotes.value)
+        val baseItems = prepareUseCase(allNotes)
         val consumedAnimationKeys = mutableListOf<List<Long>>()
 
         val updatedItems = baseItems.map { item ->
@@ -54,14 +62,9 @@ class NoteListViewModel : ViewModel() {
     }
 
     fun toggleNoteReadStatus(noteId: Long) {
-        _allNotes.value = _allNotes.value.map { note ->
-            if (note.id == noteId) {
-                note.copy(isRead = !note.isRead)
-            } else {
-                note
-            }
+        allNotes.firstOrNull { it.id == noteId }?.let { note ->
+            repository.updateNote(note.copy(isRead = !note.isRead))
         }
-        updateUiItems()
     }
 
     fun expandStack(target: NoteStackItem) {

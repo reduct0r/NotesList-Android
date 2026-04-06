@@ -1,7 +1,10 @@
 package com.example.noteslist.domain
 
 import com.example.noteslist.domain.model.Note
+import kotlinx.coroutines.flow.StateFlow
 
 interface NoteRepository {
-    fun getAllNotes(): List<Note>
+    val notes: StateFlow<List<Note>>
+    fun addNote(note: Note)
+    fun updateNote(note: Note)
 }

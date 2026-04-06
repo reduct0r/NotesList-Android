@@ -7,12 +7,13 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
+import com.example.noteslist.R
 import com.example.noteslist.databinding.FragmentNoteListBinding
 import com.example.noteslist.presentation.adapter.NoteListAdapter
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
 
@@ -57,8 +58,8 @@ class NoteListFragment: Fragment() {
             }
         })
 
-        binding.fab.setOnClickListener { view ->
-            Snackbar.make(view, "hello", Snackbar.LENGTH_LONG).show()
+        binding.fab.setOnClickListener {
+            findNavController().navigate(R.id.noteDetailsFragment)
         }
 
         adapter = NoteListAdapter(
