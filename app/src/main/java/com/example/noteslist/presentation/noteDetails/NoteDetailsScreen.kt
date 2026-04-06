@@ -53,6 +53,7 @@ fun NoteDetailsScreen(
     onNavigateBack: () -> Unit
 ) {
     val isNewNote = initialNote?.isNew() ?: true
+    var currentNote by remember { mutableStateOf(initialNote) }
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     val title = remember { mutableStateOf(initialNote?.title ?: "") }
     val content = remember { mutableStateOf(initialNote?.content ?: "") }
@@ -61,17 +62,17 @@ fun NoteDetailsScreen(
 
     var showUnsavedDialog by remember { mutableStateOf(false) }
 
-    val hasChanges = remember(title.value, content.value, isImportant.value, isRead.value) {
-        title.value != (initialNote?.title ?: "") ||
-                content.value != (initialNote?.content ?: "") ||
-                isImportant.value != (initialNote?.isImportant ?: false) ||
-                isRead.value != (initialNote?.isRead ?: false)
+    val hasChanges = remember(title.value, content.value, isImportant.value, isRead.value, currentNote) {
+        title.value != (currentNote?.title ?: "") ||
+                content.value != (currentNote?.content ?: "") ||
+                isImportant.value != (currentNote?.isImportant ?: false) ||
+                isRead.value != (currentNote?.isRead ?: false)
     }
 
     fun saveNote() {
         if (title.value.isBlank()) return
 
-        val noteToSave = (initialNote ?: Note()).copy(
+        val noteToSave = (currentNote ?: Note()).copy(
             title = title.value.trim(),
             content = content.value.trim(),
             isImportant = isImportant.value,
@@ -85,6 +86,16 @@ fun NoteDetailsScreen(
         viewModel.events.collect { event ->
             when (event) {
                 NoteDetailsViewModel.UiEvent.NavigateBack -> onNavigateBack()
+            }
+        }
+    }
+
+    LaunchedEffect(initialNote?.id) {
+        val noteId = initialNote?.takeIf { !it.isNew() }?.id ?: return@LaunchedEffect
+        viewModel.observeNote(noteId).collect { updatedNote ->
+            currentNote = updatedNote
+            if (updatedNote != null) {
+                isRead.value = updatedNote.isRead
             }
         }
     }
@@ -174,7 +185,7 @@ fun NoteDetailsScreen(
 
                     if (!isNewNote) {
                         Text(
-                            text = "Создано: ${initialNote.getDateString()} ${initialNote.getTimeString()}",
+                            text = "Создано: ${currentNote?.getDateString()} ${currentNote?.getTimeString()}",
                             style = MaterialTheme.typography.bodyMedium
                         )
 
@@ -246,7 +257,7 @@ fun NoteDetailsScreen(
 
                 if (!isNewNote) {
                     Text(
-                        text = "Создано: ${initialNote.getDateString()} ${initialNote.getTimeString()}",
+                        text = "Создано: ${currentNote?.getDateString()} ${currentNote?.getTimeString()}",
                         style = MaterialTheme.typography.bodyMedium
                     )
 
