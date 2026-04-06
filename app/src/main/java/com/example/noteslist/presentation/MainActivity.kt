@@ -7,7 +7,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.noteslist.databinding.ActivityMainBinding
 import com.example.noteslist.presentation.adapter.NoteListAdapter
-import com.example.noteslist.presentation.customviews.NoteViewModel
+import com.example.noteslist.presentation.customviews.note.NoteViewModel
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {

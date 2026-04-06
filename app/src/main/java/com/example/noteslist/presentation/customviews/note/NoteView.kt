@@ -1,4 +1,4 @@
-package com.example.noteslist.presentation.customviews
+package com.example.noteslist.presentation.customviews.note
 
 import android.content.Context
 import android.graphics.Color

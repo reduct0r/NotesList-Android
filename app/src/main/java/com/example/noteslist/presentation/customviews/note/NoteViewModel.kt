@@ -1,4 +1,4 @@
-package com.example.noteslist.presentation.customviews
+package com.example.noteslist.presentation.customviews.note
 
 import androidx.lifecycle.ViewModel
 import com.example.noteslist.data.repository.NoteRepositoryImpl
