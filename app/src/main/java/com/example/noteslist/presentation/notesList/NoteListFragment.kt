@@ -11,7 +11,6 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
-import com.example.noteslist.R
 import com.example.noteslist.databinding.FragmentNoteListBinding
 import com.example.noteslist.domain.model.Note
 import com.example.noteslist.presentation.MainActivity

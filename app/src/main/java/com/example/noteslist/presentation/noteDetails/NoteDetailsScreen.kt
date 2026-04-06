@@ -39,6 +39,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.noteslist.R
 import com.example.noteslist.domain.model.Note
@@ -50,7 +51,7 @@ import com.example.noteslist.domain.model.isNew
 @Composable
 fun NoteDetailsScreen(
     initialNote: Note?,
-    viewModel: NoteDetailsViewModel,
+    viewModel: NoteDetailsViewModel? = null,
     onNavigateBack: () -> Unit
 ) {
     val isNewNote = initialNote?.isNew() ?: true
@@ -80,20 +81,22 @@ fun NoteDetailsScreen(
             isRead = isRead.value
         )
 
-        viewModel.saveNote(noteToSave)
+        viewModel?.saveNote(noteToSave)
     }
 
     LaunchedEffect(viewModel) {
-        viewModel.events.collect { event ->
+        val currentViewModel = viewModel ?: return@LaunchedEffect
+        currentViewModel.events.collect { event ->
             when (event) {
                 NoteDetailsViewModel.UiEvent.NavigateBack -> onNavigateBack()
             }
         }
     }
 
-    LaunchedEffect(initialNote?.id) {
+    LaunchedEffect(initialNote?.id, viewModel) {
+        val currentViewModel = viewModel ?: return@LaunchedEffect
         val noteId = initialNote?.takeIf { !it.isNew() }?.id ?: return@LaunchedEffect
-        viewModel.observeNote(noteId).collect { updatedNote ->
+        currentViewModel.observeNote(noteId).collect { updatedNote ->
             currentNote = updatedNote
             if (updatedNote != null) {
                 isRead.value = updatedNote.isRead
@@ -124,7 +127,7 @@ fun NoteDetailsScreen(
                         else onNavigateBack()
                     }) {
                         Icon(
-                            painterResource(id = R.drawable.outline_book_24),
+                            painterResource(R.drawable.back),
                             contentDescription = stringResource(R.string.back_description)
                         )
                     }
@@ -332,5 +335,43 @@ private object UiDimen {
     const val BOTTOM_SPACER_WEIGHT = 1f
     const val LANDSCAPE_LEFT_WEIGHT = 1.2f
     const val LANDSCAPE_RIGHT_WEIGHT = 0.8f
+}
+
+@Preview(
+    name = "Portrait",
+    showBackground = true,
+    widthDp = 360,
+    heightDp = 740
+)
+@Preview(
+    name = "Landscape",
+    showBackground = true,
+    widthDp = 740,
+    heightDp = 360
+)
+private annotation class NoteDetailsMultiPreview
+
+@NoteDetailsMultiPreview
+@Composable
+private fun NoteDetailsScreenNewPreview() {
+    NoteDetailsScreen(
+        initialNote = null,
+        onNavigateBack = {}
+    )
+}
+
+@NoteDetailsMultiPreview
+@Composable
+private fun NoteDetailsScreenExistingPreview() {
+    NoteDetailsScreen(
+        initialNote = Note(
+            id = 101L,
+            title = "Сходить в магазин",
+            content = "Купить молоко и хлеб",
+            isImportant = true,
+            isRead = false
+        ),
+        onNavigateBack = {}
+    )
 }
 

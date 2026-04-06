@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
         android:contentDescription="@string/add_new_note_button"
-        android:src="@drawable/outline_book_24"
+        android:src="@drawable/edit"
         android:layout_margin="16dp" />
 
 </FrameLayout>
