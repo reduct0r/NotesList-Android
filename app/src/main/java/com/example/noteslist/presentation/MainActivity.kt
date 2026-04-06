@@ -5,6 +5,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.SimpleItemAnimator
 import com.example.noteslist.databinding.ActivityMainBinding
 import com.example.noteslist.presentation.adapter.NoteListAdapter
 import com.example.noteslist.presentation.customviews.note.NoteViewModel
@@ -20,6 +21,8 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        (binding.recyclerView.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
 
         adapter = NoteListAdapter(
             onNoteClick = { viewModel.toggleNoteReadStatus(it.id) },
