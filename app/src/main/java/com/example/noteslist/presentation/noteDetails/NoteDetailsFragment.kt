@@ -9,11 +9,16 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.example.noteslist.domain.model.Note
 import com.example.noteslist.presentation.MainActivity
 
 class NoteDetailsFragment: Fragment() {
     private val viewModel: NoteDetailsViewModel by viewModels()
     private val args: NoteDetailsFragmentArgs by navArgs()
+
+    fun getCurrentNoteForTransfer(): Note? {
+        return viewModel.getDraftOrInitial(args.note)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -26,6 +31,7 @@ class NoteDetailsFragment: Fragment() {
                     viewModel = viewModel,
                     initialNote = args.note,
                     onNavigateBack = {
+                        viewModel.clearDraft()
                         val hostActivity = activity as? MainActivity
                         if (hostActivity?.isTwoPaneMode() == true) {
                             hostActivity.closeNoteDetailsPane()

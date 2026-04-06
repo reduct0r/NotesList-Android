@@ -17,6 +17,19 @@ class NoteDetailsViewModel : ViewModel() {
     private val repository = NoteRepositoryImpl
     private val _events = MutableSharedFlow<UiEvent>()
     val events: SharedFlow<UiEvent> = _events.asSharedFlow()
+    private var draftNote: Note? = null
+
+    fun updateDraft(note: Note) {
+        draftNote = note
+    }
+
+    fun getDraftOrInitial(initial: Note?): Note? {
+        return draftNote ?: initial
+    }
+
+    fun clearDraft() {
+        draftNote = null
+    }
 
     fun observeNote(noteId: Long) = repository.notes
         .map { notes -> notes.firstOrNull { it.id == noteId } }
@@ -29,6 +42,7 @@ class NoteDetailsViewModel : ViewModel() {
             } else {
                 repository.updateNote(note)
             }
+            clearDraft()
             _events.emit(UiEvent.NavigateBack)
         }
     }

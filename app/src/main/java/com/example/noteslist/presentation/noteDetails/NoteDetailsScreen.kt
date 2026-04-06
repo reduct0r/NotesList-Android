@@ -32,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,34 +55,45 @@ fun NoteDetailsScreen(
     viewModel: NoteDetailsViewModel? = null,
     onNavigateBack: () -> Unit
 ) {
+    val noteKey = initialNote?.id ?: NEW_NOTE_KEY
     val isNewNote = initialNote?.isNew() ?: true
-    var currentNote by remember { mutableStateOf(initialNote) }
+    var currentNote by rememberSaveable(noteKey) { mutableStateOf(initialNote) }
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-    val title = remember { mutableStateOf(initialNote?.title ?: "") }
-    val content = remember { mutableStateOf(initialNote?.content ?: "") }
-    val isImportant = remember { mutableStateOf(initialNote?.isImportant ?: false) }
-    val isRead = remember { mutableStateOf(initialNote?.isRead ?: false) }
+    var title by rememberSaveable(noteKey) { mutableStateOf(initialNote?.title ?: "") }
+    var content by rememberSaveable(noteKey) { mutableStateOf(initialNote?.content ?: "") }
+    var isImportant by rememberSaveable(noteKey) { mutableStateOf(initialNote?.isImportant ?: false) }
+    var isRead by rememberSaveable(noteKey) { mutableStateOf(initialNote?.isRead ?: false) }
+    var isReadManuallyEdited by rememberSaveable(noteKey) { mutableStateOf(false) }
 
-    var showUnsavedDialog by remember { mutableStateOf(false) }
+    var showUnsavedDialog by rememberSaveable(noteKey) { mutableStateOf(false) }
 
-    val hasChanges = remember(title.value, content.value, isImportant.value, isRead.value, currentNote) {
-        title.value != (currentNote?.title ?: "") ||
-                content.value != (currentNote?.content ?: "") ||
-                isImportant.value != (currentNote?.isImportant ?: false) ||
-                isRead.value != (currentNote?.isRead ?: false)
+    val hasChanges = remember(title, content, isImportant, isRead, currentNote) {
+        title != (currentNote?.title ?: "") ||
+                content != (currentNote?.content ?: "") ||
+                isImportant != (currentNote?.isImportant ?: false) ||
+                isRead != (currentNote?.isRead ?: false)
     }
 
     fun saveNote() {
-        if (title.value.isBlank()) return
+        if (title.isBlank()) return
 
         val noteToSave = (currentNote ?: Note()).copy(
-            title = title.value.trim(),
-            content = content.value.trim(),
-            isImportant = isImportant.value,
-            isRead = isRead.value
+            title = title.trim(),
+            content = content.trim(),
+            isImportant = isImportant,
+            isRead = isRead
         )
 
         viewModel?.saveNote(noteToSave)
+    }
+
+    fun buildDraftNote(): Note {
+        return (currentNote ?: Note()).copy(
+            title = title,
+            content = content,
+            isImportant = isImportant,
+            isRead = isRead
+        )
     }
 
     LaunchedEffect(viewModel) {
@@ -98,10 +110,14 @@ fun NoteDetailsScreen(
         val noteId = initialNote?.takeIf { !it.isNew() }?.id ?: return@LaunchedEffect
         currentViewModel.observeNote(noteId).collect { updatedNote ->
             currentNote = updatedNote
-            if (updatedNote != null) {
-                isRead.value = updatedNote.isRead
+            if (updatedNote != null && !isReadManuallyEdited) {
+                isRead = updatedNote.isRead
             }
         }
+    }
+
+    LaunchedEffect(title, content, isImportant, isRead, currentNote, viewModel) {
+        viewModel?.updateDraft(buildDraftNote())
     }
 
     BackHandler(enabled = true) {
@@ -149,16 +165,16 @@ fun NoteDetailsScreen(
                     verticalArrangement = Arrangement.spacedBy(UiDimen.LANDSCAPE_SPACING)
                 ) {
                     OutlinedTextField(
-                        value = title.value,
-                        onValueChange = { title.value = it },
+                        value = title,
+                        onValueChange = { title = it },
                         label = { Text(stringResource(R.string.note_title_label)) },
                         modifier = Modifier.fillMaxWidth(),
-                        isError = title.value.isBlank(),
+                        isError = title.isBlank(),
                         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                         singleLine = true
                     )
 
-                    if (title.value.isBlank()) {
+                    if (title.isBlank()) {
                         Text(
                             text = stringResource(R.string.note_title_required_error),
                             color = MaterialTheme.colorScheme.error,
@@ -167,8 +183,8 @@ fun NoteDetailsScreen(
                     }
 
                     OutlinedTextField(
-                        value = content.value,
-                        onValueChange = { content.value = it },
+                        value = content,
+                        onValueChange = { content = it },
                         label = { Text(stringResource(R.string.note_content_label)) },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -188,8 +204,8 @@ fun NoteDetailsScreen(
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
-                            checked = isImportant.value,
-                            onCheckedChange = { isImportant.value = it }
+                            checked = isImportant,
+                            onCheckedChange = { isImportant = it }
                         )
                         Spacer(Modifier.width(UiDimen.CHECKBOX_TEXT_SPACER))
                         Text(stringResource(R.string.note_important_label))
@@ -207,8 +223,11 @@ fun NoteDetailsScreen(
 
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Checkbox(
-                                checked = isRead.value,
-                                onCheckedChange = { isRead.value = it }
+                                checked = isRead,
+                                onCheckedChange = {
+                                    isRead = it
+                                    isReadManuallyEdited = true
+                                }
                             )
                             Spacer(Modifier.width(UiDimen.CHECKBOX_TEXT_SPACER))
                             Text(stringResource(R.string.note_read_label))
@@ -236,16 +255,16 @@ fun NoteDetailsScreen(
             ) {
 
                 OutlinedTextField(
-                    value = title.value,
-                    onValueChange = { title.value = it },
+                    value = title,
+                    onValueChange = { title = it },
                     label = { Text(stringResource(R.string.note_title_label)) },
                     modifier = Modifier.fillMaxWidth(),
-                    isError = title.value.isBlank(),
+                    isError = title.isBlank(),
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                     singleLine = true
                 )
 
-                if (title.value.isBlank()) {
+                if (title.isBlank()) {
                     Text(
                         text = stringResource(R.string.note_title_required_error),
                         color = MaterialTheme.colorScheme.error,
@@ -254,8 +273,8 @@ fun NoteDetailsScreen(
                 }
 
                 OutlinedTextField(
-                    value = content.value,
-                    onValueChange = { content.value = it },
+                    value = content,
+                    onValueChange = { content = it },
                     label = { Text(stringResource(R.string.note_content_label)) },
                     modifier = Modifier.fillMaxWidth().height(UiDimen.PORTRAIT_CONTENT_HEIGHT),
                     maxLines = UiDimen.CONTENT_MAX_LINES,
@@ -264,8 +283,8 @@ fun NoteDetailsScreen(
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(
-                        checked = isImportant.value,
-                        onCheckedChange = { isImportant.value = it }
+                        checked = isImportant,
+                        onCheckedChange = { isImportant = it }
                     )
                     Spacer(Modifier.width(UiDimen.CHECKBOX_TEXT_SPACER))
                     Text(stringResource(R.string.note_important_label))
@@ -283,8 +302,11 @@ fun NoteDetailsScreen(
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
-                            checked = isRead.value,
-                            onCheckedChange = { isRead.value = it }
+                            checked = isRead,
+                            onCheckedChange = {
+                                isRead = it
+                                isReadManuallyEdited = true
+                            }
                         )
                         Spacer(Modifier.width(UiDimen.CHECKBOX_TEXT_SPACER))
                         Text(stringResource(R.string.note_read_label))
@@ -336,6 +358,8 @@ private object UiDimen {
     const val LANDSCAPE_LEFT_WEIGHT = 1.2f
     const val LANDSCAPE_RIGHT_WEIGHT = 0.8f
 }
+
+private const val NEW_NOTE_KEY = -1L
 
 @Preview(
     name = "Portrait",

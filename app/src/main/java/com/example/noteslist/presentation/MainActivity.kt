@@ -113,9 +113,7 @@ class MainActivity : AppCompatActivity() {
             .filterIsInstance<NoteDetailsFragment>()
             .firstOrNull()
 
-        val note = detailsFragment?.arguments
-            ?.let(NoteDetailsFragmentArgs::fromBundle)
-            ?.note
+        val note = detailsFragment?.getCurrentNoteForTransfer()
 
         navController.popBackStack(R.id.noteListFragment, false)
         openNoteDetailsPane(note)
