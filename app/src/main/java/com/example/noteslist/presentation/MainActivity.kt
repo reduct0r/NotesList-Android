@@ -1,14 +1,17 @@
 package com.example.noteslist.presentation
 
 import android.os.Bundle
+import android.view.View
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.example.noteslist.databinding.ActivityMainBinding
 import com.example.noteslist.presentation.adapter.NoteListAdapter
 import com.example.noteslist.presentation.customviews.note.NoteViewModel
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -21,6 +24,31 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        binding.fab.setOnClickListener { view ->
+            Snackbar.make(view, "hello", Snackbar.LENGTH_LONG).show()
+        }
+
+        binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            private val threshold = 10
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                val fab = binding.fab
+                when {
+                    dy > threshold && fab.isOrWillBeShown -> {
+                        fab.hide()
+                    }
+                    dy < -threshold && fab.isOrWillBeShown -> {
+                        fab.hide()
+                    }
+                }
+            }
+
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                binding.fab.show()
+            }
+        })
+
+
 
         (binding.recyclerView.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
 
