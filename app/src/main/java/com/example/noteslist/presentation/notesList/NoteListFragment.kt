@@ -13,6 +13,8 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.example.noteslist.R
 import com.example.noteslist.databinding.FragmentNoteListBinding
+import com.example.noteslist.domain.model.Note
+import com.example.noteslist.presentation.MainActivity
 import com.example.noteslist.presentation.adapter.NoteListAdapter
 import kotlinx.coroutines.launch
 
@@ -59,16 +61,12 @@ class NoteListFragment: Fragment() {
         })
 
         binding.fab.setOnClickListener {
-            val direction = NoteListFragmentDirections
-                .actionNoteListFragmentToNoteDetailsFragment(null)
-            findNavController().navigate(direction)
+            openDetails(note = null)
         }
 
         adapter = NoteListAdapter(
             onNoteClick = { note ->
-                val direction = NoteListFragmentDirections
-                    .actionNoteListFragmentToNoteDetailsFragment(note)
-                findNavController().navigate(direction)
+                openDetails(note)
             },
             onNoteLongClick = { note ->
                 viewModel.toggleNoteReadStatus(note.id)
@@ -93,5 +91,17 @@ class NoteListFragment: Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    private fun openDetails(note: Note?) {
+        val hostActivity = activity as? MainActivity
+        if (hostActivity?.isTwoPaneMode() == true) {
+            hostActivity.openNoteDetailsPane(note)
+            return
+        }
+
+        val direction = NoteListFragmentDirections
+            .actionNoteListFragmentToNoteDetailsFragment(note)
+        findNavController().navigate(direction)
     }
 }

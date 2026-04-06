@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
+import com.example.noteslist.presentation.MainActivity
 
 class NoteDetailsFragment: Fragment() {
     private val viewModel: NoteDetailsViewModel by viewModels()
@@ -24,7 +25,14 @@ class NoteDetailsFragment: Fragment() {
                 NoteDetailsScreen(
                     viewModel = viewModel,
                     initialNote = args.note,
-                    onNavigateBack = { findNavController().popBackStack() }
+                    onNavigateBack = {
+                        val hostActivity = activity as? MainActivity
+                        if (hostActivity?.isTwoPaneMode() == true) {
+                            hostActivity.closeNoteDetailsPane()
+                        } else {
+                            findNavController().popBackStack()
+                        }
+                    }
                 )
             }
         }
