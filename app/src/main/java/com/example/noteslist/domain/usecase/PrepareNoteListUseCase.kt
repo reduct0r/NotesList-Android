@@ -12,7 +12,10 @@ class PrepareNoteListUseCase {
     operator fun invoke(notes: List<Note>): List<ListItem> {
         val groupedByDate = notes
             .groupBy { it.getDateString() }
-            .toSortedMap(compareByDescending { it })
+            .entries
+            .sortedByDescending { (_, notesOnDate) ->
+                notesOnDate.maxOfOrNull { it.createdAt } ?: Long.MIN_VALUE
+            }
 
         val result = mutableListOf<ListItem>()
 
