@@ -20,6 +20,10 @@ class NoteListAdapter(
     private val onCollapse: (NoteStackItem) -> Unit
 ) : ListAdapter<ListItem, RecyclerView.ViewHolder>(DiffCallback()) {
 
+    init {
+        stateRestorationPolicy = StateRestorationPolicy.PREVENT_WHEN_EMPTY
+    }
+
     private val delegates = listOf(
         DateHeaderDelegate(),
         ImportantNoteDelegate(onClick = onNoteClick, onLongClick = onNoteLongClick),

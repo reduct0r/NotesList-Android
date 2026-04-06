@@ -8,7 +8,9 @@ import android.view.ViewGroup
 import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -99,15 +101,18 @@ class NoteListFragment: Fragment() {
             layoutManager = LinearLayoutManager(requireContext())
         }
 
-        lifecycleScope.launch {
-            viewModel.uiItems.collect { items ->
-                adapter.submitList(items)
-                restoreRecyclerStateIfNeeded()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiItems.collect { items ->
+                    adapter.submitList(items)
+                    restoreRecyclerStateIfNeeded()
+                }
             }
         }
     }
 
     private fun restoreRecyclerStateIfNeeded() {
+        val currentBinding = _binding ?: return
         if (isRecyclerStateRestored) return
 
         if (pendingWasAtBottom == true) {
@@ -117,9 +122,9 @@ class NoteListFragment: Fragment() {
 
         val state = pendingRecyclerState ?: return
 
-        binding.recyclerView.post {
+        currentBinding.recyclerView.post {
             if (isRecyclerStateRestored) return@post
-            binding.recyclerView.layoutManager?.onRestoreInstanceState(state)
+            _binding?.recyclerView?.layoutManager?.onRestoreInstanceState(state)
             pendingRecyclerState = null
             pendingWasAtBottom = null
             isRecyclerStateRestored = true
@@ -127,13 +132,14 @@ class NoteListFragment: Fragment() {
     }
 
     private fun restoreRecyclerToBottom() {
-        binding.recyclerView.post {
+        val currentBinding = _binding ?: return
+        currentBinding.recyclerView.post {
             if (isRecyclerStateRestored) return@post
             val lastIndex = adapter.itemCount - 1
             if (lastIndex >= 0) {
-                binding.recyclerView.scrollToPosition(lastIndex)
-                binding.recyclerView.post {
-                    binding.recyclerView.scrollToPosition(lastIndex)
+                _binding?.recyclerView?.scrollToPosition(lastIndex)
+                _binding?.recyclerView?.post {
+                    _binding?.recyclerView?.scrollToPosition(lastIndex)
                     pendingRecyclerState = null
                     pendingWasAtBottom = null
                     isRecyclerStateRestored = true
