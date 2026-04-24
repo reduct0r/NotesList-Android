@@ -201,33 +201,14 @@ private fun NoteDetailsScreenScaffold(
                         .fillMaxHeight(),
                     verticalArrangement = Arrangement.spacedBy(UiDimen.LANDSCAPE_SPACING)
                 ) {
-                    OutlinedTextField(
-                        value = uiState.title,
-                        onValueChange = onTitleChanged,
-                        label = { Text(stringResource(R.string.note_title_label)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        isError = uiState.title.isBlank(),
-                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                        singleLine = true
-                    )
-
-                    if (uiState.title.isBlank()) {
-                        Text(
-                            text = stringResource(R.string.note_title_required_error),
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-
-                    OutlinedTextField(
-                        value = uiState.content,
-                        onValueChange = onContentChanged,
-                        label = { Text(stringResource(R.string.note_content_label)) },
+                    NoteEditableFields(
+                        title = uiState.title,
+                        content = uiState.content,
+                        onTitleChanged = onTitleChanged,
+                        onContentChanged = onContentChanged,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(UiDimen.CONTENT_FIELD_WEIGHT),
-                        maxLines = UiDimen.CONTENT_MAX_LINES,
-                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
+                            .weight(UiDimen.CONTENT_FIELD_WEIGHT)
                     )
                 }
 
@@ -239,43 +220,18 @@ private fun NoteDetailsScreenScaffold(
                         .fillMaxHeight(),
                     verticalArrangement = Arrangement.spacedBy(UiDimen.LANDSCAPE_SPACING)
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = uiState.isImportant,
-                            onCheckedChange = onImportantChanged
-                        )
-                        Spacer(Modifier.width(UiDimen.CHECKBOX_TEXT_SPACER))
-                        Text(stringResource(R.string.note_important_label))
-                    }
-
-                    if (!uiState.isNewNote) {
-                        Text(
-                            text = stringResource(
-                                R.string.note_created_format,
-                                uiState.currentNote?.getDateString().orEmpty(),
-                                uiState.currentNote?.getTimeString().orEmpty()
-                            ),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(
-                                checked = uiState.isRead,
-                                onCheckedChange = onReadChanged
-                            )
-                            Spacer(Modifier.width(UiDimen.CHECKBOX_TEXT_SPACER))
-                            Text(stringResource(R.string.note_read_label))
-                        }
-                    }
+                    NoteFlagsAndMeta(
+                        uiState = uiState,
+                        onImportantChanged = onImportantChanged,
+                        onReadChanged = onReadChanged
+                    )
 
                     Spacer(Modifier.weight(UiDimen.BOTTOM_SPACER_WEIGHT))
 
-                    Button(
-                        onClick = onSave,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(if (uiState.isNewNote) stringResource(R.string.add) else stringResource(R.string.save))
-                    }
+                    NoteSaveButton(
+                        isNewNote = uiState.isNewNote,
+                        onSave = onSave
+                    )
                 }
             }
         } else {
@@ -287,71 +243,28 @@ private fun NoteDetailsScreenScaffold(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(UiDimen.PORTRAIT_SPACING)
             ) {
-
-                OutlinedTextField(
-                    value = uiState.title,
-                    onValueChange = onTitleChanged,
-                    label = { Text(stringResource(R.string.note_title_label)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    isError = uiState.title.isBlank(),
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                    singleLine = true
+                NoteEditableFields(
+                    title = uiState.title,
+                    content = uiState.content,
+                    onTitleChanged = onTitleChanged,
+                    onContentChanged = onContentChanged,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(UiDimen.PORTRAIT_CONTENT_HEIGHT)
                 )
 
-                if (uiState.title.isBlank()) {
-                    Text(
-                        text = stringResource(R.string.note_title_required_error),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-
-                OutlinedTextField(
-                    value = uiState.content,
-                    onValueChange = onContentChanged,
-                    label = { Text(stringResource(R.string.note_content_label)) },
-                    modifier = Modifier.fillMaxWidth().height(UiDimen.PORTRAIT_CONTENT_HEIGHT),
-                    maxLines = UiDimen.CONTENT_MAX_LINES,
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
+                NoteFlagsAndMeta(
+                    uiState = uiState,
+                    onImportantChanged = onImportantChanged,
+                    onReadChanged = onReadChanged
                 )
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(
-                        checked = uiState.isImportant,
-                        onCheckedChange = onImportantChanged
-                    )
-                    Spacer(Modifier.width(UiDimen.CHECKBOX_TEXT_SPACER))
-                    Text(stringResource(R.string.note_important_label))
-                }
-
-                if (!uiState.isNewNote) {
-                    Text(
-                        text = stringResource(
-                            R.string.note_created_format,
-                            uiState.currentNote?.getDateString().orEmpty(),
-                            uiState.currentNote?.getTimeString().orEmpty()
-                        ),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = uiState.isRead,
-                            onCheckedChange = onReadChanged
-                        )
-                        Spacer(Modifier.width(UiDimen.CHECKBOX_TEXT_SPACER))
-                        Text(stringResource(R.string.note_read_label))
-                    }
-                }
 
                 Spacer(Modifier.weight(UiDimen.BOTTOM_SPACER_WEIGHT))
 
-                Button(
-                    onClick = onSave,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(if (uiState.isNewNote) stringResource(R.string.add) else stringResource(R.string.save))
-                }
+                NoteSaveButton(
+                    isNewNote = uiState.isNewNote,
+                    onSave = onSave
+                )
             }
         }
     }
@@ -372,6 +285,91 @@ private fun NoteDetailsScreenScaffold(
                 }
             }
         )
+    }
+}
+
+@Composable
+private fun NoteEditableFields(
+    title: String,
+    content: String,
+    onTitleChanged: (String) -> Unit,
+    onContentChanged: (String) -> Unit,
+    modifier: Modifier
+) {
+    OutlinedTextField(
+        value = title,
+        onValueChange = onTitleChanged,
+        label = { Text(stringResource(R.string.note_title_label)) },
+        modifier = Modifier.fillMaxWidth(),
+        isError = title.isBlank(),
+        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+        singleLine = true
+    )
+
+    if (title.isBlank()) {
+        Text(
+            text = stringResource(R.string.note_title_required_error),
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall
+        )
+    }
+
+    OutlinedTextField(
+        value = content,
+        onValueChange = onContentChanged,
+        label = { Text(stringResource(R.string.note_content_label)) },
+        modifier = modifier,
+        maxLines = UiDimen.CONTENT_MAX_LINES,
+        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
+    )
+}
+
+@Composable
+private fun NoteFlagsAndMeta(
+    uiState: NoteDetailsUiState,
+    onImportantChanged: (Boolean) -> Unit,
+    onReadChanged: (Boolean) -> Unit
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Checkbox(
+            checked = uiState.isImportant,
+            onCheckedChange = onImportantChanged
+        )
+        Spacer(Modifier.width(UiDimen.CHECKBOX_TEXT_SPACER))
+        Text(stringResource(R.string.note_important_label))
+    }
+
+    if (!uiState.isNewNote) {
+        Text(
+            text = stringResource(
+                R.string.note_created_format,
+                uiState.currentNote?.getDateString().orEmpty(),
+                uiState.currentNote?.getTimeString().orEmpty()
+            ),
+            style = MaterialTheme.typography.bodyMedium
+        )
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(
+                checked = uiState.isRead,
+                onCheckedChange = onReadChanged
+            )
+            Spacer(Modifier.width(UiDimen.CHECKBOX_TEXT_SPACER))
+            Text(stringResource(R.string.note_read_label))
+        }
+    }
+}
+
+@Composable
+private fun NoteSaveButton(
+    isNewNote: Boolean,
+    onSave: () -> Unit
+) {
+    Button(
+        onClick = onSave,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(if (isNewNote) stringResource(R.string.add) else stringResource(R.string.save))
     }
 }
 
