@@ -8,8 +8,8 @@ import kotlinx.coroutines.flow.asStateFlow
 
 object NoteRepositoryImpl : NoteRepository {
     val now = System.currentTimeMillis()
-    const val HOUR = 3600000L
-    const val DAY = 86400000L
+    private const val HOUR = 3600000L
+    private const val DAY = 86400000L
 
     private val seedNotes = listOf(
         Note(1, "ДЗ по Android", "RecyclerView & Delegates", now - HOUR, true),
@@ -54,4 +54,5 @@ object NoteRepositoryImpl : NoteRepository {
             }
         }
     }
+
 }
