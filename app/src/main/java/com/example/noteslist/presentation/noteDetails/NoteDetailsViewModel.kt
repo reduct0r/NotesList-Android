@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.noteslist.data.repository.NoteRepositoryImpl
 import com.example.noteslist.domain.model.Note
 import com.example.noteslist.domain.model.isNew
+import com.example.noteslist.domain.usecase.CreateNewNoteUseCase
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -15,9 +16,12 @@ import kotlinx.coroutines.launch
 class NoteDetailsViewModel : ViewModel() {
 
     private val repository = NoteRepositoryImpl
+    private val createNewNoteUseCase = CreateNewNoteUseCase()
     private val _events = MutableSharedFlow<UiEvent>()
     val events: SharedFlow<UiEvent> = _events.asSharedFlow()
     private var draftNote: Note? = null
+
+    fun createNewNote(): Note = createNewNoteUseCase()
 
     fun updateDraft(note: Note) {
         draftNote = note

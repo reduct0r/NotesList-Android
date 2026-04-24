@@ -12,30 +12,30 @@ object NoteRepositoryImpl : NoteRepository {
     private const val DAY = 86400000L
 
     private val seedNotes = listOf(
-        Note(1, "ДЗ по Android", "RecyclerView & Delegates", now - HOUR, true),
-        Note(2, "ДЗ по АиСД", "Алгоритмы на графах", now - HOUR * 2, true),
-        Note(3, "Корм коту", "Купить влажный", now - HOUR * 3, false),
-        Note(4, "Зал", "Тренировка в 19:00", now - HOUR * 4, false),
-        Note(5, "Ужин", "Приготовить пасту", now - HOUR * 5, false),
+        Note(1L, "ДЗ по Android", "RecyclerView & Delegates", now - HOUR, true, false),
+        Note(2L, "ДЗ по АиСД", "Алгоритмы на графах", now - HOUR * 2, true, false),
+        Note(3L, "Корм коту", "Купить влажный", now - HOUR * 3, false, false),
+        Note(4L, "Зал", "Тренировка в 19:00", now - HOUR * 4, false, false),
+        Note(5L, "Ужин", "Приготовить пасту", now - HOUR * 5, false, false),
 
-        Note(6, "Позвонить маме", "Поздравить!", now - DAY - HOUR, true),
-        Note(7, "Срочный баг", "Пофиксить в проде", now - DAY - HOUR * 2, true),
+        Note(6L, "Позвонить маме", "Поздравить!", now - DAY - HOUR, true, false),
+        Note(7L, "Срочный баг", "Пофиксить в проде", now - DAY - HOUR * 2, true, false),
 
-        Note(8, "Купить молоко", "2.5%", now - DAY * 2 - HOUR, false),
-        Note(9, "Помыть машину", "Самообслуживание", now - DAY * 2 - HOUR * 3, false),
+        Note(8L, "Купить молоко", "2.5%", now - DAY * 2 - HOUR, false, false),
+        Note(9L, "Помыть машину", "Самообслуживание", now - DAY * 2 - HOUR * 3, false, false),
 
-        Note(10, "Заметка 1", "Текст", now - DAY * 3 - HOUR, false),
-        Note(11, "Заметка 2", "Текст", now - DAY * 3 - HOUR * 2, false),
-        Note(12, "Заметка 3", "Текст", now - DAY * 3 - HOUR * 3, false),
-        Note(13, "Заметка 4", "Текст", now - DAY * 3 - HOUR * 4, false),
-        Note(14, "Заметка 5", "Текст", now - DAY * 3 - HOUR * 5, false),
+        Note(10L, "Заметка 1", "Текст", now - DAY * 3 - HOUR, false, false),
+        Note(11L, "Заметка 2", "Текст", now - DAY * 3 - HOUR * 2, false, false),
+        Note(12L, "Заметка 3", "Текст", now - DAY * 3 - HOUR * 3, false, false),
+        Note(13L, "Заметка 4", "Текст", now - DAY * 3 - HOUR * 4, false, false),
+        Note(14L, "Заметка 5", "Текст", now - DAY * 3 - HOUR * 5, false, false),
 
-        Note(15, "Одинокая заметка", "Я одна в этом дне", now - DAY * 4, false),
+        Note(15L, "Одинокая заметка", "Я одна в этом дне", now - DAY * 4, false, false),
 
-        Note(16, "Старая важная", "Проверка архива", now - DAY * 7, true),
-        Note(17, "Старая обычная", "Проверка архива", now - DAY * 7 - HOUR, false),
+        Note(16L, "Старая важная", "Проверка архива", now - DAY * 7, true, false),
+        Note(17L, "Старая обычная", "Проверка архива", now - DAY * 7 - HOUR, false, false),
 
-        Note(18, "Прошлый год", "С Новым Годом!", now - DAY * 400, false)
+        Note(18L, "Прошлый год", "С Новым Годом!", now - DAY * 400, false, false)
     )
 
     private val _notes = MutableStateFlow(seedNotes)

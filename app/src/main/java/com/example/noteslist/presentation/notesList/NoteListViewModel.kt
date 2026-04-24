@@ -40,7 +40,7 @@ class NoteListViewModel : ViewModel() {
 
         val updatedItems = baseItems.map { item ->
             if (item is NoteStackItem) {
-                val key = item.notes.map { it.id }.sorted()
+                val key = item.notes.mapNotNull { it.id }.sorted()
                 val isExpanded = expandedStacks[key] ?: false
                 val shouldAnimateExpand = isExpanded && pendingExpandAnimations.contains(key)
 
@@ -61,21 +61,22 @@ class NoteListViewModel : ViewModel() {
         _uiItems.value = updatedItems
     }
 
-    fun toggleNoteReadStatus(noteId: Long) {
-        allNotes.firstOrNull { it.id == noteId }?.let { note ->
+    fun toggleNoteReadStatus(noteId: Long?) {
+        val targetId = noteId ?: return
+        allNotes.firstOrNull { it.id == targetId }?.let { note ->
             repository.updateNote(note.copy(isRead = !note.isRead))
         }
     }
 
     fun expandStack(target: NoteStackItem) {
-        val key = target.notes.map { it.id }.sorted()
+        val key = target.notes.mapNotNull { it.id }.sorted()
         expandedStacks[key] = true
         pendingExpandAnimations.add(key)
         updateUiItems()
     }
 
     fun collapseStack(target: NoteStackItem) {
-        val key = target.notes.map { it.id }.sorted()
+        val key = target.notes.mapNotNull { it.id }.sorted()
         expandedStacks[key] = false
         pendingExpandAnimations.remove(key)
         updateUiItems()

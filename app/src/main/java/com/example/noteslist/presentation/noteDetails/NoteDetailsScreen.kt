@@ -47,6 +47,7 @@ import com.example.noteslist.domain.model.Note
 import com.example.noteslist.domain.model.getDateString
 import com.example.noteslist.domain.model.getTimeString
 import com.example.noteslist.domain.model.isNew
+import com.example.noteslist.domain.usecase.CreateNewNoteUseCase
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,9 +56,13 @@ fun NoteDetailsScreen(
     viewModel: NoteDetailsViewModel? = null,
     onNavigateBack: () -> Unit
 ) {
+    val createNewNoteUseCase = remember { CreateNewNoteUseCase() }
     val noteKey = initialNote?.id ?: NEW_NOTE_KEY
     val isNewNote = initialNote?.isNew() ?: true
     var currentNote by rememberSaveable(noteKey) { mutableStateOf(initialNote) }
+    val fallbackNewNote = remember(noteKey, viewModel) {
+        viewModel?.createNewNote() ?: createNewNoteUseCase()
+    }
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
     var title by rememberSaveable(noteKey) { mutableStateOf(initialNote?.title ?: "") }
     var content by rememberSaveable(noteKey) { mutableStateOf(initialNote?.content ?: "") }
@@ -77,7 +82,7 @@ fun NoteDetailsScreen(
     fun saveNote() {
         if (title.isBlank()) return
 
-        val noteToSave = (currentNote ?: Note()).copy(
+        val noteToSave = (currentNote ?: fallbackNewNote).copy(
             title = title.trim(),
             content = content.trim(),
             isImportant = isImportant,
@@ -88,7 +93,7 @@ fun NoteDetailsScreen(
     }
 
     fun buildDraftNote(): Note {
-        return (currentNote ?: Note()).copy(
+        return (currentNote ?: fallbackNewNote).copy(
             title = title,
             content = content,
             isImportant = isImportant,
@@ -107,7 +112,8 @@ fun NoteDetailsScreen(
 
     LaunchedEffect(initialNote?.id, viewModel) {
         val currentViewModel = viewModel ?: return@LaunchedEffect
-        val noteId = initialNote?.takeIf { !it.isNew() }?.id ?: return@LaunchedEffect
+        val existingNote = initialNote?.takeIf { !it.isNew() } ?: return@LaunchedEffect
+        val noteId = existingNote.id ?: return@LaunchedEffect
         currentViewModel.observeNote(noteId).collect { updatedNote ->
             currentNote = updatedNote
             if (updatedNote != null && !isReadManuallyEdited) {
@@ -392,6 +398,7 @@ private fun NoteDetailsScreenExistingPreview() {
             id = 101L,
             title = "Сходить в магазин",
             content = "Купить молоко и хлеб",
+            createdAt = System.currentTimeMillis(),
             isImportant = true,
             isRead = false
         ),
