@@ -164,7 +164,7 @@ private fun NoteDetailsScreenScaffold(
     onDismissUnsavedDialog: () -> Unit,
     onConfirmUnsavedClose: () -> Unit
 ) {
-    BackHandler(enabled = true) {
+    BackHandler {
         onBackPressed()
     }
 
