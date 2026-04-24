@@ -4,24 +4,26 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import android.os.Bundle
 import android.os.SystemClock
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
 import androidx.navigation.fragment.NavHostFragment
 import com.example.noteslist.R
+import com.example.noteslist.databinding.ActivityMainBinding
 import com.example.noteslist.domain.model.Note
 import com.example.noteslist.presentation.noteDetails.NoteDetailsFragment
 import com.example.noteslist.presentation.noteDetails.NoteDetailsFragmentArgs
 
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
     private var lastBackPressedAt = 0L
     private var shouldShowExitDialogAfterPaneClose = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         window.decorView.post {
             syncTwoPaneStateIfNeeded()
@@ -52,7 +54,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 val navHost = supportFragmentManager
-                    .findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
+                    .findFragmentById(binding.navHostFragment.id) as? NavHostFragment
                 val navController = navHost?.navController
                 val currentDestinationId = navController?.currentDestination?.id
 
@@ -69,7 +71,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun isTwoPaneMode(): Boolean {
-        return findViewById<View?>(R.id.detail_container) != null
+        return binding.detailContainer != null
     }
 
     fun openNoteDetailsPane(note: Note?) {
@@ -82,14 +84,14 @@ class MainActivity : AppCompatActivity() {
 
         supportFragmentManager.commit {
             setReorderingAllowed(true)
-            replace(R.id.detail_container, fragment, NOTE_DETAILS_TAG)
+            replace(binding.detailContainer?.id ?: return, fragment, NOTE_DETAILS_TAG)
         }
     }
 
     fun closeNoteDetailsPane() {
         if (!isTwoPaneMode()) return
 
-        supportFragmentManager.findFragmentById(R.id.detail_container)?.let { fragment ->
+        supportFragmentManager.findFragmentById(binding.detailContainer?.id ?: return)?.let { fragment ->
             supportFragmentManager.commit {
                 setReorderingAllowed(true)
                 remove(fragment)
@@ -98,13 +100,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isNoteDetailsPaneOpened(): Boolean {
-        return isTwoPaneMode() && supportFragmentManager.findFragmentById(R.id.detail_container) != null
+        return isTwoPaneMode() && supportFragmentManager.findFragmentById(binding.detailContainer?.id ?: return false) != null
     }
 
     private fun syncTwoPaneStateIfNeeded() {
         if (!isTwoPaneMode()) return
 
-        val navHost = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as? NavHostFragment
+        val navHost = supportFragmentManager.findFragmentById(binding.navHostFragment.id) as? NavHostFragment
         val navController = navHost?.navController ?: return
 
         if (navController.currentDestination?.id != R.id.noteDetailsFragment) return
