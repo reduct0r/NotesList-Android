@@ -5,6 +5,7 @@ import androidx.appcompat.app.AlertDialog
 import android.os.Bundle
 import android.os.SystemClock
 import android.widget.Toast
+import androidx.core.os.BundleCompat
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.commit
 import androidx.navigation.fragment.NavHostFragment
@@ -19,14 +20,23 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private var lastBackPressedAt = 0L
     private var shouldShowExitDialogAfterPaneClose = false
+    private var pendingSinglePaneNote: Note? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        pendingSinglePaneNote = savedInstanceState?.let {
+            BundleCompat.getParcelable(it, KEY_PENDING_SINGLE_PANE_NOTE, Note::class.java)
+        }
+
         window.decorView.post {
-            syncTwoPaneStateIfNeeded()
+            if (isTwoPaneMode()) {
+                syncTwoPaneStateIfNeeded()
+            } else {
+                syncSinglePaneStateIfNeeded()
+            }
         }
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -121,6 +131,29 @@ class MainActivity : AppCompatActivity() {
         openNoteDetailsPane(note)
     }
 
+    private fun syncSinglePaneStateIfNeeded() {
+        if (isTwoPaneMode()) return
+
+        val note = pendingSinglePaneNote ?: return
+        val navHost = supportFragmentManager.findFragmentById(binding.navHostFragment.id) as? NavHostFragment
+        val navController = navHost?.navController ?: return
+
+        if (navController.currentDestination?.id == R.id.noteListFragment) {
+            navController.navigate(R.id.noteDetailsFragment, NoteDetailsFragmentArgs(note).toBundle())
+        }
+        pendingSinglePaneNote = null
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        if (isTwoPaneMode()) {
+            val detailsFragment = supportFragmentManager
+                .findFragmentById(binding.detailContainer?.id ?: -1) as? NoteDetailsFragment
+            val noteForTransfer = detailsFragment?.getCurrentNoteForTransfer()
+            outState.putParcelable(KEY_PENDING_SINGLE_PANE_NOTE, noteForTransfer)
+        }
+        super.onSaveInstanceState(outState)
+    }
+
     private fun showExitConfirmationByDoubleBack() {
         val now = SystemClock.elapsedRealtime()
         val isSecondBackClick = now - lastBackPressedAt <= BACK_PRESS_WINDOW_MS
@@ -149,5 +182,6 @@ class MainActivity : AppCompatActivity() {
     companion object {
         private const val BACK_PRESS_WINDOW_MS = 2000L
         private const val NOTE_DETAILS_TAG = "note_details_pane"
+        private const val KEY_PENDING_SINGLE_PANE_NOTE = "key_pending_single_pane_note"
     }
 }
