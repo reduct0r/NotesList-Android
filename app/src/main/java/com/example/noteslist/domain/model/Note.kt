@@ -5,10 +5,11 @@ import kotlinx.parcelize.Parcelize
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 
 @Parcelize
 data class Note(
-    val id: Long?,
+    val id: UUID?,
     val title: String,
     val content: String,
     val createdAt: Long,

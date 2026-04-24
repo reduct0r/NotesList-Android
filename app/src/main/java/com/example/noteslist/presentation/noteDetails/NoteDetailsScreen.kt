@@ -43,6 +43,7 @@ import com.example.noteslist.R
 import com.example.noteslist.domain.model.Note
 import com.example.noteslist.domain.model.getDateString
 import com.example.noteslist.domain.model.getTimeString
+import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -119,7 +120,7 @@ private fun NoteDetailsScreenExistingPreview() {
 @Composable
 private fun NoteDetailsContentPreview(isNew: Boolean) {
     val note = if (isNew) null else Note(
-        id = 101L,
+        id = UUID.randomUUID(),
         title = "Сходить в магазин",
         content = "Купить молоко и хлеб",
         createdAt = System.currentTimeMillis(),

@@ -7,6 +7,7 @@ import com.example.noteslist.domain.model.Note
 import com.example.noteslist.domain.model.list.ListItem
 import com.example.noteslist.domain.model.list.NoteStackItem
 import com.example.noteslist.domain.usecase.PrepareNoteListUseCase
+import java.util.UUID
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,8 +23,8 @@ class NoteListViewModel : ViewModel() {
 
     val uiItems: StateFlow<List<ListItem>> = _uiItems.asStateFlow()
 
-    private val expandedStacks = mutableMapOf<List<Long>, Boolean>()
-    private val pendingExpandAnimations = mutableSetOf<List<Long>>()
+    private val expandedStacks = mutableMapOf<List<UUID>, Boolean>()
+    private val pendingExpandAnimations = mutableSetOf<List<UUID>>()
 
     init {
         viewModelScope.launch {
@@ -36,7 +37,7 @@ class NoteListViewModel : ViewModel() {
 
     private fun updateUiItems() {
         val baseItems = prepareUseCase(allNotes)
-        val consumedAnimationKeys = mutableListOf<List<Long>>()
+        val consumedAnimationKeys = mutableListOf<List<UUID>>()
 
         val updatedItems = baseItems.map { item ->
             if (item is NoteStackItem) {
@@ -61,7 +62,7 @@ class NoteListViewModel : ViewModel() {
         _uiItems.value = updatedItems
     }
 
-    fun toggleNoteReadStatus(noteId: Long?) {
+    fun toggleNoteReadStatus(noteId: UUID?) {
         val targetId = noteId ?: return
         allNotes.firstOrNull { it.id == targetId }?.let { note ->
             repository.updateNote(note.copy(isRead = !note.isRead))

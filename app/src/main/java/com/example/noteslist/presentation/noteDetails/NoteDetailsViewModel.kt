@@ -6,6 +6,7 @@ import com.example.noteslist.data.repository.NoteRepositoryImpl
 import com.example.noteslist.domain.model.Note
 import com.example.noteslist.domain.model.isNew
 import com.example.noteslist.domain.usecase.CreateNewNoteUseCase
+import java.util.UUID
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -29,7 +30,7 @@ class NoteDetailsViewModel : ViewModel() {
     private var observeNoteJob: Job? = null
     private var newNoteTemplate: Note = createNewNoteUseCase()
     private var hasInitialized = false
-    private var initializedNoteId: Long? = null
+    private var initializedNoteId: UUID? = null
 
     fun initialize(initialNote: Note?) {
         val noteId = initialNote?.id
@@ -136,14 +137,14 @@ class NoteDetailsViewModel : ViewModel() {
         _uiState.value = NoteDetailsUiState()
     }
 
-    fun observeNote(noteId: Long) = repository.notes
+    fun observeNote(noteId: UUID) = repository.notes
         .map { notes -> notes.firstOrNull { it.id == noteId } }
         .distinctUntilChanged()
 
     fun saveNote(note: Note) {
         viewModelScope.launch {
             if (note.isNew()) {
-                repository.addNote(note.copy(id = System.currentTimeMillis()))
+                repository.addNote(note.copy(id = generateNoteId()))
             } else {
                 repository.updateNote(note)
             }
@@ -151,6 +152,8 @@ class NoteDetailsViewModel : ViewModel() {
             _events.emit(UiEvent.NavigateBack)
         }
     }
+
+    private fun generateNoteId(): UUID = UUID.randomUUID()
 
     private fun updateState(transform: (NoteDetailsUiState) -> NoteDetailsUiState) {
         _uiState.update(transform)
