@@ -16,6 +16,11 @@ class NoteDetailsFragment: Fragment() {
     private val viewModel: NoteDetailsViewModel by viewModels()
     private val args: NoteDetailsFragmentArgs by navArgs()
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        viewModel.initialize(args.note)
+    }
+
     fun getCurrentNoteForTransfer(): Note? {
         return viewModel.getDraftOrInitial(args.note)
     }
@@ -29,7 +34,6 @@ class NoteDetailsFragment: Fragment() {
             setContent {
                 NoteDetailsScreen(
                     viewModel = viewModel,
-                    initialNote = args.note,
                     onNavigateBack = {
                         viewModel.clearDraft()
                         val hostActivity = activity as? MainActivity

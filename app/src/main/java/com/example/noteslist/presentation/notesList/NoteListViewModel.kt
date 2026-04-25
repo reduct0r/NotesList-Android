@@ -7,6 +7,7 @@ import com.example.noteslist.domain.model.Note
 import com.example.noteslist.domain.model.list.ListItem
 import com.example.noteslist.domain.model.list.NoteStackItem
 import com.example.noteslist.domain.usecase.PrepareNoteListUseCase
+import java.util.UUID
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,8 +23,8 @@ class NoteListViewModel : ViewModel() {
 
     val uiItems: StateFlow<List<ListItem>> = _uiItems.asStateFlow()
 
-    private val expandedStacks = mutableMapOf<List<Long>, Boolean>()
-    private val pendingExpandAnimations = mutableSetOf<List<Long>>()
+    private val expandedStacks = mutableMapOf<List<UUID>, Boolean>()
+    private val pendingExpandAnimations = mutableSetOf<List<UUID>>()
 
     init {
         viewModelScope.launch {
@@ -36,11 +37,11 @@ class NoteListViewModel : ViewModel() {
 
     private fun updateUiItems() {
         val baseItems = prepareUseCase(allNotes)
-        val consumedAnimationKeys = mutableListOf<List<Long>>()
+        val consumedAnimationKeys = mutableListOf<List<UUID>>()
 
         val updatedItems = baseItems.map { item ->
             if (item is NoteStackItem) {
-                val key = item.notes.map { it.id }.sorted()
+                val key = item.notes.mapNotNull { it.id }.sorted()
                 val isExpanded = expandedStacks[key] ?: false
                 val shouldAnimateExpand = isExpanded && pendingExpandAnimations.contains(key)
 
@@ -61,21 +62,22 @@ class NoteListViewModel : ViewModel() {
         _uiItems.value = updatedItems
     }
 
-    fun toggleNoteReadStatus(noteId: Long) {
-        allNotes.firstOrNull { it.id == noteId }?.let { note ->
+    fun toggleNoteReadStatus(noteId: UUID?) {
+        val targetId = noteId ?: return
+        allNotes.firstOrNull { it.id == targetId }?.let { note ->
             repository.updateNote(note.copy(isRead = !note.isRead))
         }
     }
 
     fun expandStack(target: NoteStackItem) {
-        val key = target.notes.map { it.id }.sorted()
+        val key = target.notes.mapNotNull { it.id }.sorted()
         expandedStacks[key] = true
         pendingExpandAnimations.add(key)
         updateUiItems()
     }
 
     fun collapseStack(target: NoteStackItem) {
-        val key = target.notes.map { it.id }.sorted()
+        val key = target.notes.mapNotNull { it.id }.sorted()
         expandedStacks[key] = false
         pendingExpandAnimations.remove(key)
         updateUiItems()

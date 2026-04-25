@@ -29,11 +29,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -46,86 +43,130 @@ import com.example.noteslist.R
 import com.example.noteslist.domain.model.Note
 import com.example.noteslist.domain.model.getDateString
 import com.example.noteslist.domain.model.getTimeString
-import com.example.noteslist.domain.model.isNew
+import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NoteDetailsScreen(
-    initialNote: Note?,
-    viewModel: NoteDetailsViewModel? = null,
+    viewModel: NoteDetailsViewModel,
     onNavigateBack: () -> Unit
 ) {
-    val noteKey = initialNote?.id ?: NEW_NOTE_KEY
-    val isNewNote = initialNote?.isNew() ?: true
-    var currentNote by rememberSaveable(noteKey) { mutableStateOf(initialNote) }
+    val uiState by viewModel.uiState.collectAsState()
     val isLandscape = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
-    var title by rememberSaveable(noteKey) { mutableStateOf(initialNote?.title ?: "") }
-    var content by rememberSaveable(noteKey) { mutableStateOf(initialNote?.content ?: "") }
-    var isImportant by rememberSaveable(noteKey) { mutableStateOf(initialNote?.isImportant ?: false) }
-    var isRead by rememberSaveable(noteKey) { mutableStateOf(initialNote?.isRead ?: false) }
-    var isReadManuallyEdited by rememberSaveable(noteKey) { mutableStateOf(false) }
-
-    var showUnsavedDialog by rememberSaveable(noteKey) { mutableStateOf(false) }
-
-    val hasChanges = remember(title, content, isImportant, isRead, currentNote) {
-        title != (currentNote?.title ?: "") ||
-                content != (currentNote?.content ?: "") ||
-                isImportant != (currentNote?.isImportant ?: false) ||
-                isRead != (currentNote?.isRead ?: false)
-    }
-
-    fun saveNote() {
-        if (title.isBlank()) return
-
-        val noteToSave = (currentNote ?: Note()).copy(
-            title = title.trim(),
-            content = content.trim(),
-            isImportant = isImportant,
-            isRead = isRead
-        )
-
-        viewModel?.saveNote(noteToSave)
-    }
-
-    fun buildDraftNote(): Note {
-        return (currentNote ?: Note()).copy(
-            title = title,
-            content = content,
-            isImportant = isImportant,
-            isRead = isRead
-        )
-    }
 
     LaunchedEffect(viewModel) {
-        val currentViewModel = viewModel ?: return@LaunchedEffect
-        currentViewModel.events.collect { event ->
+        viewModel.events.collect { event ->
             when (event) {
                 NoteDetailsViewModel.UiEvent.NavigateBack -> onNavigateBack()
             }
         }
     }
 
-    LaunchedEffect(initialNote?.id, viewModel) {
-        val currentViewModel = viewModel ?: return@LaunchedEffect
-        val noteId = initialNote?.takeIf { !it.isNew() }?.id ?: return@LaunchedEffect
-        currentViewModel.observeNote(noteId).collect { updatedNote ->
-            currentNote = updatedNote
-            if (updatedNote != null && !isReadManuallyEdited) {
-                isRead = updatedNote.isRead
-            }
-        }
-    }
+    NoteDetailsScreenScaffold(
+        uiState = uiState,
+        isLandscape = isLandscape,
+        onBackPressed = viewModel::onBackPressedRequested,
+        onTitleChanged = viewModel::onTitleChanged,
+        onContentChanged = viewModel::onContentChanged,
+        onImportantChanged = viewModel::onImportantChanged,
+        onReadChanged = viewModel::onReadChanged,
+        onSave = viewModel::onSaveClicked,
+        onDismissUnsavedDialog = viewModel::dismissUnsavedDialog,
+        onConfirmUnsavedClose = viewModel::confirmCloseWithoutSaving
+    )
+}
 
-    LaunchedEffect(title, content, isImportant, isRead, currentNote, viewModel) {
-        viewModel?.updateDraft(buildDraftNote())
-    }
+private object UiDimen {
+    val SCREEN_PADDING = 16.dp
+    val PORTRAIT_SPACING = 16.dp
+    val LANDSCAPE_SPACING = 12.dp
+    val CHECKBOX_TEXT_SPACER = 8.dp
+    val LANDSCAPE_COLUMN_SPACER = 12.dp
+    val PORTRAIT_CONTENT_HEIGHT = 200.dp
 
-    BackHandler(enabled = true) {
-        if (hasChanges) {
-            showUnsavedDialog = true
-        } else {
-            onNavigateBack()
-        }
+    const val CONTENT_MAX_LINES = 10
+    const val CONTENT_FIELD_WEIGHT = 1f
+    const val BOTTOM_SPACER_WEIGHT = 1f
+    const val LANDSCAPE_LEFT_WEIGHT = 1.2f
+    const val LANDSCAPE_RIGHT_WEIGHT = 0.8f
+}
+
+@Preview(
+    name = "Portrait",
+    showBackground = true,
+    widthDp = 360,
+    heightDp = 740
+)
+@Preview(
+    name = "Landscape",
+    showBackground = true,
+    widthDp = 740,
+    heightDp = 360
+)
+private annotation class NoteDetailsMultiPreview
+
+@NoteDetailsMultiPreview
+@Composable
+private fun NoteDetailsScreenNewPreview() {
+    NoteDetailsContentPreview(isNew = true)
+}
+
+@NoteDetailsMultiPreview
+@Composable
+private fun NoteDetailsScreenExistingPreview() {
+    NoteDetailsContentPreview(isNew = false)
+}
+
+@Composable
+private fun NoteDetailsContentPreview(isNew: Boolean) {
+    val note = if (isNew) null else Note(
+        id = UUID.randomUUID(),
+        title = "Сходить в магазин",
+        content = "Купить молоко и хлеб",
+        createdAt = System.currentTimeMillis(),
+        isImportant = true,
+        isRead = false
+    )
+
+    val previewState = NoteDetailsUiState(
+        currentNote = note,
+        title = note?.title.orEmpty(),
+        content = note?.content.orEmpty(),
+        isImportant = note?.isImportant ?: false,
+        isRead = note?.isRead ?: false,
+        isNewNote = isNew
+    )
+
+    NoteDetailsScreenScaffold(
+        uiState = previewState,
+        isLandscape = false,
+        onBackPressed = {},
+        onTitleChanged = {},
+        onContentChanged = {},
+        onImportantChanged = {},
+        onReadChanged = {},
+        onSave = {},
+        onDismissUnsavedDialog = {},
+        onConfirmUnsavedClose = {}
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun NoteDetailsScreenScaffold(
+    uiState: NoteDetailsUiState,
+    isLandscape: Boolean,
+    onBackPressed: () -> Unit,
+    onTitleChanged: (String) -> Unit,
+    onContentChanged: (String) -> Unit,
+    onImportantChanged: (Boolean) -> Unit,
+    onReadChanged: (Boolean) -> Unit,
+    onSave: () -> Unit,
+    onDismissUnsavedDialog: () -> Unit,
+    onConfirmUnsavedClose: () -> Unit
+) {
+    BackHandler {
+        onBackPressed()
     }
 
     Scaffold(
@@ -133,15 +174,12 @@ fun NoteDetailsScreen(
             TopAppBar(
                 title = {
                     Text(
-                        if (isNewNote) stringResource(R.string.note_details_title_new)
+                        if (uiState.isNewNote) stringResource(R.string.note_details_title_new)
                         else stringResource(R.string.note_details_title_existing)
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = {
-                        if (hasChanges) showUnsavedDialog = true
-                        else onNavigateBack()
-                    }) {
+                    IconButton(onClick = onBackPressed) {
                         Icon(
                             painterResource(R.drawable.back),
                             contentDescription = stringResource(R.string.back_description)
@@ -164,33 +202,14 @@ fun NoteDetailsScreen(
                         .fillMaxHeight(),
                     verticalArrangement = Arrangement.spacedBy(UiDimen.LANDSCAPE_SPACING)
                 ) {
-                    OutlinedTextField(
-                        value = title,
-                        onValueChange = { title = it },
-                        label = { Text(stringResource(R.string.note_title_label)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        isError = title.isBlank(),
-                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                        singleLine = true
-                    )
-
-                    if (title.isBlank()) {
-                        Text(
-                            text = stringResource(R.string.note_title_required_error),
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-
-                    OutlinedTextField(
-                        value = content,
-                        onValueChange = { content = it },
-                        label = { Text(stringResource(R.string.note_content_label)) },
+                    NoteEditableFields(
+                        title = uiState.title,
+                        content = uiState.content,
+                        onTitleChanged = onTitleChanged,
+                        onContentChanged = onContentChanged,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(UiDimen.CONTENT_FIELD_WEIGHT),
-                        maxLines = UiDimen.CONTENT_MAX_LINES,
-                        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
+                            .weight(UiDimen.CONTENT_FIELD_WEIGHT)
                     )
                 }
 
@@ -202,46 +221,18 @@ fun NoteDetailsScreen(
                         .fillMaxHeight(),
                     verticalArrangement = Arrangement.spacedBy(UiDimen.LANDSCAPE_SPACING)
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = isImportant,
-                            onCheckedChange = { isImportant = it }
-                        )
-                        Spacer(Modifier.width(UiDimen.CHECKBOX_TEXT_SPACER))
-                        Text(stringResource(R.string.note_important_label))
-                    }
-
-                    if (!isNewNote) {
-                        Text(
-                            text = stringResource(
-                                R.string.note_created_format,
-                                currentNote?.getDateString().orEmpty(),
-                                currentNote?.getTimeString().orEmpty()
-                            ),
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(
-                                checked = isRead,
-                                onCheckedChange = {
-                                    isRead = it
-                                    isReadManuallyEdited = true
-                                }
-                            )
-                            Spacer(Modifier.width(UiDimen.CHECKBOX_TEXT_SPACER))
-                            Text(stringResource(R.string.note_read_label))
-                        }
-                    }
+                    NoteFlagsAndMeta(
+                        uiState = uiState,
+                        onImportantChanged = onImportantChanged,
+                        onReadChanged = onReadChanged
+                    )
 
                     Spacer(Modifier.weight(UiDimen.BOTTOM_SPACER_WEIGHT))
 
-                    Button(
-                        onClick = { saveNote() },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(if (isNewNote) stringResource(R.string.add) else stringResource(R.string.save))
-                    }
+                    NoteSaveButton(
+                        isNewNote = uiState.isNewNote,
+                        onSave = onSave
+                    )
                 }
             }
         } else {
@@ -253,90 +244,44 @@ fun NoteDetailsScreen(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(UiDimen.PORTRAIT_SPACING)
             ) {
-
-                OutlinedTextField(
-                    value = title,
-                    onValueChange = { title = it },
-                    label = { Text(stringResource(R.string.note_title_label)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    isError = title.isBlank(),
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
-                    singleLine = true
+                NoteEditableFields(
+                    title = uiState.title,
+                    content = uiState.content,
+                    onTitleChanged = onTitleChanged,
+                    onContentChanged = onContentChanged,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(UiDimen.PORTRAIT_CONTENT_HEIGHT)
                 )
 
-                if (title.isBlank()) {
-                    Text(
-                        text = stringResource(R.string.note_title_required_error),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-
-                OutlinedTextField(
-                    value = content,
-                    onValueChange = { content = it },
-                    label = { Text(stringResource(R.string.note_content_label)) },
-                    modifier = Modifier.fillMaxWidth().height(UiDimen.PORTRAIT_CONTENT_HEIGHT),
-                    maxLines = UiDimen.CONTENT_MAX_LINES,
-                    keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
+                NoteFlagsAndMeta(
+                    uiState = uiState,
+                    onImportantChanged = onImportantChanged,
+                    onReadChanged = onReadChanged
                 )
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(
-                        checked = isImportant,
-                        onCheckedChange = { isImportant = it }
-                    )
-                    Spacer(Modifier.width(UiDimen.CHECKBOX_TEXT_SPACER))
-                    Text(stringResource(R.string.note_important_label))
-                }
-
-                if (!isNewNote) {
-                    Text(
-                        text = stringResource(
-                            R.string.note_created_format,
-                            currentNote?.getDateString().orEmpty(),
-                            currentNote?.getTimeString().orEmpty()
-                        ),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(
-                            checked = isRead,
-                            onCheckedChange = {
-                                isRead = it
-                                isReadManuallyEdited = true
-                            }
-                        )
-                        Spacer(Modifier.width(UiDimen.CHECKBOX_TEXT_SPACER))
-                        Text(stringResource(R.string.note_read_label))
-                    }
-                }
 
                 Spacer(Modifier.weight(UiDimen.BOTTOM_SPACER_WEIGHT))
 
-                Button(
-                    onClick = { saveNote() },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(if (isNewNote) stringResource(R.string.add) else stringResource(R.string.save))
-                }
+                NoteSaveButton(
+                    isNewNote = uiState.isNewNote,
+                    onSave = onSave
+                )
             }
         }
     }
 
-    if (showUnsavedDialog) {
+    if (uiState.showUnsavedDialog) {
         AlertDialog(
-            onDismissRequest = { showUnsavedDialog = false },
+            onDismissRequest = onDismissUnsavedDialog,
             title = { Text(stringResource(R.string.unsaved_changes_title)) },
             text = { Text(stringResource(R.string.unsaved_changes_message)) },
             confirmButton = {
-                TextButton(onClick = { onNavigateBack() }) {
+                TextButton(onClick = onConfirmUnsavedClose) {
                     Text(stringResource(R.string.close))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showUnsavedDialog = false }) {
+                TextButton(onClick = onDismissUnsavedDialog) {
                     Text(stringResource(R.string.cancel))
                 }
             }
@@ -344,58 +289,88 @@ fun NoteDetailsScreen(
     }
 }
 
-private object UiDimen {
-    val SCREEN_PADDING = 16.dp
-    val PORTRAIT_SPACING = 16.dp
-    val LANDSCAPE_SPACING = 12.dp
-    val CHECKBOX_TEXT_SPACER = 8.dp
-    val LANDSCAPE_COLUMN_SPACER = 12.dp
-    val PORTRAIT_CONTENT_HEIGHT = 200.dp
-
-    const val CONTENT_MAX_LINES = 10
-    const val CONTENT_FIELD_WEIGHT = 1f
-    const val BOTTOM_SPACER_WEIGHT = 1f
-    const val LANDSCAPE_LEFT_WEIGHT = 1.2f
-    const val LANDSCAPE_RIGHT_WEIGHT = 0.8f
-}
-
-private const val NEW_NOTE_KEY = -1L
-
-@Preview(
-    name = "Portrait",
-    showBackground = true,
-    widthDp = 360,
-    heightDp = 740
-)
-@Preview(
-    name = "Landscape",
-    showBackground = true,
-    widthDp = 740,
-    heightDp = 360
-)
-private annotation class NoteDetailsMultiPreview
-
-@NoteDetailsMultiPreview
 @Composable
-private fun NoteDetailsScreenNewPreview() {
-    NoteDetailsScreen(
-        initialNote = null,
-        onNavigateBack = {}
+private fun NoteEditableFields(
+    title: String,
+    content: String,
+    onTitleChanged: (String) -> Unit,
+    onContentChanged: (String) -> Unit,
+    modifier: Modifier
+) {
+    OutlinedTextField(
+        value = title,
+        onValueChange = onTitleChanged,
+        label = { Text(stringResource(R.string.note_title_label)) },
+        modifier = Modifier.fillMaxWidth(),
+        isError = title.isBlank(),
+        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
+        singleLine = true
+    )
+
+    if (title.isBlank()) {
+        Text(
+            text = stringResource(R.string.note_title_required_error),
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall
+        )
+    }
+
+    OutlinedTextField(
+        value = content,
+        onValueChange = onContentChanged,
+        label = { Text(stringResource(R.string.note_content_label)) },
+        modifier = modifier,
+        maxLines = UiDimen.CONTENT_MAX_LINES,
+        keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences)
     )
 }
 
-@NoteDetailsMultiPreview
 @Composable
-private fun NoteDetailsScreenExistingPreview() {
-    NoteDetailsScreen(
-        initialNote = Note(
-            id = 101L,
-            title = "Сходить в магазин",
-            content = "Купить молоко и хлеб",
-            isImportant = true,
-            isRead = false
-        ),
-        onNavigateBack = {}
-    )
+private fun NoteFlagsAndMeta(
+    uiState: NoteDetailsUiState,
+    onImportantChanged: (Boolean) -> Unit,
+    onReadChanged: (Boolean) -> Unit
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Checkbox(
+            checked = uiState.isImportant,
+            onCheckedChange = onImportantChanged
+        )
+        Spacer(Modifier.width(UiDimen.CHECKBOX_TEXT_SPACER))
+        Text(stringResource(R.string.note_important_label))
+    }
+
+    if (!uiState.isNewNote) {
+        Text(
+            text = stringResource(
+                R.string.note_created_format,
+                uiState.currentNote?.getDateString().orEmpty(),
+                uiState.currentNote?.getTimeString().orEmpty()
+            ),
+            style = MaterialTheme.typography.bodyMedium
+        )
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(
+                checked = uiState.isRead,
+                onCheckedChange = onReadChanged
+            )
+            Spacer(Modifier.width(UiDimen.CHECKBOX_TEXT_SPACER))
+            Text(stringResource(R.string.note_read_label))
+        }
+    }
+}
+
+@Composable
+private fun NoteSaveButton(
+    isNewNote: Boolean,
+    onSave: () -> Unit
+) {
+    Button(
+        onClick = onSave,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(if (isNewNote) stringResource(R.string.add) else stringResource(R.string.save))
+    }
 }
 
