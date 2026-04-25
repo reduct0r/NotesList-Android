@@ -2,6 +2,8 @@
 activityCompose = "1.13.0"
 agp = "8.13.2"
 composeBom = "2026.03.01"
+dagger = "2.59.2"
+daggerCompiler = "2.59.2"
 fragmentKtx = "1.8.9"
 kotlin = "2.3.20"
 coreKtx = "1.18.0"
@@ -46,6 +48,8 @@ androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version
 androidx-ui = { module = "androidx.compose.ui:ui" }
 androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
+dagger = { module = "com.google.dagger:dagger", version.ref = "dagger" }
+dagger-compiler = { module = "com.google.dagger:dagger-compiler", version.ref = "daggerCompiler" }
 kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlinStdlib" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
