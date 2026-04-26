@@ -16,8 +16,7 @@ import com.example.noteslist.presentation.adapter.delegates.NoteStackDelegate
 class NoteListAdapter(
     private val onNoteClick: (Note) -> Unit,
     private val onNoteLongClick: (Note) -> Unit,
-    private val onExpand: (NoteStackItem) -> Unit,
-    private val onCollapse: (NoteStackItem) -> Unit
+    private val onToggleStack: (NoteStackItem) -> Unit
 ) : ListAdapter<ListItem, RecyclerView.ViewHolder>(DiffCallback()) {
 
     init {
@@ -30,8 +29,7 @@ class NoteListAdapter(
         NoteStackDelegate(
             onNoteClick = onNoteClick,
             onNoteLongClick = onNoteLongClick,
-            onExpand = onExpand,
-            onCollapse = onCollapse
+            onToggleStack = onToggleStack
         )
     )
 

@@ -3,83 +3,73 @@ package com.example.noteslist.presentation.notesList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.noteslist.data.repository.NoteRepositoryImpl
-import com.example.noteslist.domain.model.Note
+import com.example.noteslist.domain.NoteRepository
 import com.example.noteslist.domain.model.list.ListItem
 import com.example.noteslist.domain.model.list.NoteStackItem
+import com.example.noteslist.domain.usecase.BuildNoteListUiUseCase
 import com.example.noteslist.domain.usecase.PrepareNoteListUseCase
+import com.example.noteslist.domain.usecase.ToggleNoteReadStatusUseCase
+import com.example.noteslist.domain.usecase.ToggleStackUseCase
 import java.util.UUID
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 
-class NoteListViewModel : ViewModel() {
+class NoteListViewModel(
+    private val repository: NoteRepository = NoteRepositoryImpl,
+    private val prepareUseCase: PrepareNoteListUseCase = PrepareNoteListUseCase(),
+    private val buildNoteListUiUseCase: BuildNoteListUiUseCase = BuildNoteListUiUseCase(),
+    private val toggleStackUseCase: ToggleStackUseCase = ToggleStackUseCase(),
+    private val toggleNoteReadStatusUseCase: ToggleNoteReadStatusUseCase = ToggleNoteReadStatusUseCase(
+        repository = repository
+    )
+) : ViewModel() {
 
-    private val repository = NoteRepositoryImpl
-    private val prepareUseCase = PrepareNoteListUseCase()
-
-    private val _uiItems = MutableStateFlow<List<ListItem>>(emptyList())
-    private var allNotes: List<Note> = emptyList()
-
-    val uiItems: StateFlow<List<ListItem>> = _uiItems.asStateFlow()
-
-    private val expandedStacks = mutableMapOf<List<UUID>, Boolean>()
+    private val expandedStacks = MutableStateFlow<Map<List<UUID>, Boolean>>(emptyMap())
     private val pendingExpandAnimations = mutableSetOf<List<UUID>>()
 
-    init {
-        viewModelScope.launch {
-            repository.notes.collect { notes ->
-                allNotes = notes
-                updateUiItems()
-            }
-        }
-    }
+    val uiItems: StateFlow<List<ListItem>> = combine(
+        repository.notes,
+        expandedStacks
+    ) { notes, expanded ->
+        val baseItems = prepareUseCase(notes)
+        val (items, consumedAnimations) = buildNoteListUiUseCase(
+            baseItems = baseItems,
+            expandedStacks = expanded,
+            pendingAnimations = pendingExpandAnimations
+        )
 
-    private fun updateUiItems() {
-        val baseItems = prepareUseCase(allNotes)
-        val consumedAnimationKeys = mutableListOf<List<UUID>>()
+        pendingExpandAnimations.removeAll(consumedAnimations)
 
-        val updatedItems = baseItems.map { item ->
-            if (item is NoteStackItem) {
-                val key = item.notes.mapNotNull { it.id }.sorted()
-                val isExpanded = expandedStacks[key] ?: false
-                val shouldAnimateExpand = isExpanded && pendingExpandAnimations.contains(key)
-
-                if (shouldAnimateExpand) {
-                    consumedAnimationKeys.add(key)
-                }
-
-                item.copy(
-                    isExpanded = isExpanded,
-                    shouldAnimateExpand = shouldAnimateExpand
-                )
-            } else {
-                item
-            }
-        }
-
-        pendingExpandAnimations.removeAll(consumedAnimationKeys.toSet())
-        _uiItems.value = updatedItems
-    }
+        items
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = emptyList()
+    )
 
     fun toggleNoteReadStatus(noteId: UUID?) {
         val targetId = noteId ?: return
-        allNotes.firstOrNull { it.id == targetId }?.let { note ->
-            repository.updateNote(note.copy(isRead = !note.isRead))
+        repository.notes.value.firstOrNull { it.id == targetId }?.let { note ->
+            toggleNoteReadStatusUseCase(note)
         }
     }
 
-    fun expandStack(target: NoteStackItem) {
+    fun toggleStack(target: NoteStackItem) {
         val key = target.notes.mapNotNull { it.id }.sorted()
-        expandedStacks[key] = true
-        pendingExpandAnimations.add(key)
-        updateUiItems()
-    }
-
-    fun collapseStack(target: NoteStackItem) {
-        val key = target.notes.mapNotNull { it.id }.sorted()
-        expandedStacks[key] = false
-        pendingExpandAnimations.remove(key)
-        updateUiItems()
+        expandedStacks.update { current ->
+            current.toMutableMap().apply {
+                toggleStackUseCase(
+                    ToggleStackUseCase.Params(
+                        key = key,
+                        expanded = this,
+                        animations = pendingExpandAnimations
+                    )
+                )
+            }
+        }
     }
 }

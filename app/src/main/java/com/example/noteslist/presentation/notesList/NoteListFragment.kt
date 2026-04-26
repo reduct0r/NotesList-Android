@@ -90,8 +90,7 @@ class NoteListFragment: Fragment() {
             onNoteLongClick = { note ->
                 viewModel.toggleNoteReadStatus(note.id)
             },
-            onExpand = { viewModel.expandStack(it) },
-            onCollapse = { viewModel.collapseStack(it) }
+            onToggleStack = { viewModel.toggleStack(it) }
         )
 
         binding.recyclerView.adapter = adapter

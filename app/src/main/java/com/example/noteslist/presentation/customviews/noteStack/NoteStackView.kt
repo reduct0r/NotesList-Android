@@ -28,27 +28,9 @@ class NoteStackView @JvmOverloads constructor(
 
     private val noteViews = mutableListOf<NoteView>()
     private var collapseButton: TextView? = null
-    private var shouldAnimateNextExpand = false
     private var pendingExpandAnimation = false
 
-    private var isExpanded = false
-        set(value) {
-            val wasExpanded = field
-            field = value
-
-            val isStartingExpandAnimation = value && !wasExpanded && !isSingleNote && shouldAnimateNextExpand
-            pendingExpandAnimation = isStartingExpandAnimation
-
-            updateVisibilityAndButton(isStartingExpandAnimation)
-            requestLayout()
-
-            shouldAnimateNextExpand = false
-        }
-
-    private var isSingleNote = false
-
-    var onExpandRequest: (() -> Unit)? = null
-    var onCollapseRequest: (() -> Unit)? = null
+    var onToggleRequest: (() -> Unit)? = null
 
     private val expandAnimator = StackExpandAnimator()
 
@@ -71,22 +53,14 @@ class NoteStackView @JvmOverloads constructor(
         onNoteClick: (Note) -> Unit,
         onNoteLongClick: (Note) -> Unit
     ) {
-        isSingleNote = notes.size == 1
-
-        val targetExpanded = expanded || notes.size == 1
-        shouldAnimateNextExpand = (shouldAnimateExpand) &&
-                !isExpanded &&
-                targetExpanded &&
-                notes.size > 1
-
-        if (isExpanded && targetExpanded && noteViews.size == notes.size) {
-            updateExistingNoteViews(notes, onNoteClick, onNoteLongClick)
-            return
-        }
+        val isSingleNote = notes.size == 1
+        val shouldShowExpanded = expanded || isSingleNote
+        val shouldRunExpandAnimation = shouldAnimateExpand && shouldShowExpanded && !isSingleNote
 
         removeAllViews()
         noteViews.clear()
         collapseButton = null
+        pendingExpandAnimation = shouldRunExpandAnimation
 
         val sorted = notes.sortedByDescending { it.createdAt }
 
@@ -102,34 +76,14 @@ class NoteStackView @JvmOverloads constructor(
             }
         }
 
-        isSingleNote = sorted.size == 1
-        isExpanded = targetExpanded
+        updateVisibilityAndButton(isExpanded = shouldShowExpanded, isSingleNote = isSingleNote)
+        requestLayout()
     }
 
-    private fun updateExistingNoteViews(
-        newNotes: List<Note>,
-        onNoteClick: (Note) -> Unit,
-        onNoteLongClick: (Note) -> Unit
+    private fun updateVisibilityAndButton(
+        isExpanded: Boolean,
+        isSingleNote: Boolean
     ) {
-        val sorted = newNotes.sortedByDescending { it.createdAt }
-        noteViews.forEachIndexed { index, noteView ->
-            val note = sorted[index]
-            noteView.apply {
-                title = note.title
-                content = note.content
-                time = note.getTimeString()
-                isImportant = note.isImportant
-                isRead = note.isRead
-                setOnClickListener { onNoteClick(note) }
-                setOnLongClickListener {
-                    onNoteLongClick(note)
-                    true
-                }
-            }
-        }
-    }
-
-    private fun updateVisibilityAndButton(startingExpandAnimation: Boolean = false) {
         isClickable = !isExpanded && !isSingleNote
 
         if (isExpanded || isSingleNote) {
@@ -139,7 +93,7 @@ class NoteStackView @JvmOverloads constructor(
                 collapseButton = createCollapseButton()
                 addView(collapseButton)
 
-                if (startingExpandAnimation) {
+                if (pendingExpandAnimation) {
                     collapseButton?.apply {
                         alpha = COLLAPSE_BUTTON_HIDDEN_ALPHA
                         scaleX = COLLAPSE_BUTTON_HIDDEN_SCALE
@@ -182,7 +136,7 @@ class NoteStackView @JvmOverloads constructor(
                 setColor(context.getColor(R.color.read_background))
             }
             elevation = elementsElevation.toFloat()
-            setOnClickListener { onCollapseRequest?.invoke() }
+            setOnClickListener { onToggleRequest?.invoke() }
         }
     }
 
@@ -197,13 +151,13 @@ class NoteStackView @JvmOverloads constructor(
     }
 
     override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
-        return !isExpanded && !isSingleNote
+        return !isCurrentlyExpanded() && !isSingleNote()
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        if (isExpanded || isSingleNote) return false
+        if (isCurrentlyExpanded() || isSingleNote()) return false
         if (event?.action == MotionEvent.ACTION_UP) {
-            onExpandRequest?.invoke()
+            onToggleRequest?.invoke()
         }
         return true
     }
@@ -211,6 +165,8 @@ class NoteStackView @JvmOverloads constructor(
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val parentWidth = MeasureSpec.getSize(widthMeasureSpec)
         val childWidthSpec = MeasureSpec.makeMeasureSpec(parentWidth, MeasureSpec.EXACTLY)
+        val isExpanded = isCurrentlyExpanded()
+        val isSingleNote = isSingleNote()
 
         val childrenToMeasure = if (isExpanded || isSingleNote) {
             noteViews + listOfNotNull(collapseButton)
@@ -239,6 +195,8 @@ class NoteStackView @JvmOverloads constructor(
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         val parentWidth = r - l
         var currentTop = 0
+        val isExpanded = isCurrentlyExpanded()
+        val isSingleNote = isSingleNote()
 
         if (isExpanded || isSingleNote) {
             noteViews.forEach { child ->
@@ -278,6 +236,10 @@ class NoteStackView @JvmOverloads constructor(
             visibleNotes.reversed().forEach { it.bringToFront() }
         }
     }
+
+    private fun isSingleNote(): Boolean = noteViews.size == 1
+
+    private fun isCurrentlyExpanded(): Boolean = collapseButton != null || isSingleNote()
 
     private fun Int.dpToPx(): Int = (this * resources.displayMetrics.density).toInt()
 
