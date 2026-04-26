@@ -6,6 +6,7 @@ import com.example.noteslist.data.repository.NoteRepositoryImpl
 import com.example.noteslist.domain.model.Note
 import com.example.noteslist.domain.model.isNew
 import com.example.noteslist.domain.usecase.CreateNewNoteUseCase
+import jakarta.inject.Inject
 import java.util.UUID
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,9 +20,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-class NoteDetailsViewModel : ViewModel() {
-
-    private val repository = NoteRepositoryImpl
+class NoteDetailsViewModel @Inject constructor(
+    private val repository: NoteRepositoryImpl
+): ViewModel() {
     private val createNewNoteUseCase = CreateNewNoteUseCase()
     private val _uiState = MutableStateFlow(NoteDetailsUiState())
     val uiState: StateFlow<NoteDetailsUiState> = _uiState.asStateFlow()

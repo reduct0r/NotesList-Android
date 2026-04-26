@@ -6,11 +6,12 @@ import java.util.UUID
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import javax.inject.Inject
+import javax.inject.Singleton
 
-object NoteRepositoryImpl : NoteRepository {
+@Singleton
+class  NoteRepositoryImpl @Inject constructor(): NoteRepository {
     val now = System.currentTimeMillis()
-    private const val HOUR = 3600000L
-    private const val DAY = 86400000L
 
     private val seedNotes = listOf(
         Note(UUID.randomUUID(), "ДЗ по Android", "RecyclerView & Delegates", now - HOUR, true, false),
@@ -54,6 +55,11 @@ object NoteRepositoryImpl : NoteRepository {
                 this[index] = note
             }
         }
+    }
+
+    private companion object {
+        private const val HOUR = 3600000L
+        private const val DAY = 86400000L
     }
 
 }

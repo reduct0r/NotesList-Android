@@ -2,9 +2,10 @@ package com.example.noteslist.domain.usecase
 
 import com.example.noteslist.domain.model.list.ListItem
 import com.example.noteslist.domain.model.list.NoteStackItem
+import jakarta.inject.Inject
 import java.util.UUID
 
-class BuildNoteListUiUseCase {
+class BuildNoteListUiUseCase @Inject constructor() {
 
     operator fun invoke(
         baseItems: List<ListItem>,

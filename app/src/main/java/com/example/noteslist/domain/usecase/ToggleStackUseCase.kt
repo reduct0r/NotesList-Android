@@ -1,8 +1,9 @@
 package com.example.noteslist.domain.usecase
 
+import jakarta.inject.Inject
 import java.util.UUID
 
-class ToggleStackUseCase {
+class ToggleStackUseCase @Inject constructor() {
 
     data class Params(
         val key: List<UUID>,

@@ -3,9 +3,10 @@ package com.example.noteslist.domain.usecase
 import com.example.noteslist.data.repository.NoteRepositoryImpl
 import com.example.noteslist.domain.NoteRepository
 import com.example.noteslist.domain.model.Note
+import jakarta.inject.Inject
 
-class ToggleNoteReadStatusUseCase(
-    private val repository: NoteRepository = NoteRepositoryImpl
+class ToggleNoteReadStatusUseCase @Inject constructor(
+    private val repository: NoteRepository
 ) {
     operator fun invoke(note: Note) {
         repository.updateNote(note.copy(isRead = !note.isRead))

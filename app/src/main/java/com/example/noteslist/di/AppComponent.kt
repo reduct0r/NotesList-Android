@@ -1,6 +1,10 @@
 package com.example.noteslist.di
 
+import android.content.Context
+import com.example.noteslist.presentation.notesList.NoteListFragment
+import dagger.BindsInstance
 import dagger.Component
+import dagger.Provides
 import javax.inject.Singleton
 
 @Singleton
@@ -10,4 +14,14 @@ import javax.inject.Singleton
         ViewModelInitializerModule::class
     ]
 )
-interface AppComponent
+interface AppComponent {
+    fun inject(fragment: NoteListFragment)
+
+    @Component.Factory
+    interface Factory {
+        fun create(
+            @BindsInstance appContext: Context
+        ): AppComponent
+    }
+
+}

@@ -9,24 +9,33 @@ import androidx.core.os.BundleCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
+import com.example.noteslist.NoteListApp
 import com.example.noteslist.databinding.FragmentNoteListBinding
 import com.example.noteslist.domain.model.Note
 import com.example.noteslist.presentation.MainActivity
 import com.example.noteslist.presentation.adapter.NoteListAdapter
+import jakarta.inject.Inject
 import kotlinx.coroutines.launch
+import kotlin.getValue
 
 
 class NoteListFragment: Fragment() {
     private var _binding: FragmentNoteListBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: NoteListViewModel by viewModels()
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+
+    private val viewModel by viewModels<NoteListViewModel> {
+        viewModelFactory
+    }
 
     private lateinit var adapter: NoteListAdapter
     private var pendingRecyclerState: Parcelable? = null
@@ -45,6 +54,10 @@ class NoteListFragment: Fragment() {
                 null
             }
         }
+
+        (requireContext().applicationContext as NoteListApp)
+            .appComponent
+            .inject(this)
     }
 
     override fun onCreateView(

@@ -10,6 +10,7 @@ import com.example.noteslist.domain.usecase.BuildNoteListUiUseCase
 import com.example.noteslist.domain.usecase.PrepareNoteListUseCase
 import com.example.noteslist.domain.usecase.ToggleNoteReadStatusUseCase
 import com.example.noteslist.domain.usecase.ToggleStackUseCase
+import jakarta.inject.Inject
 import java.util.UUID
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -18,14 +19,12 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 
-class NoteListViewModel(
-    private val repository: NoteRepository = NoteRepositoryImpl,
-    private val prepareUseCase: PrepareNoteListUseCase = PrepareNoteListUseCase(),
-    private val buildNoteListUiUseCase: BuildNoteListUiUseCase = BuildNoteListUiUseCase(),
-    private val toggleStackUseCase: ToggleStackUseCase = ToggleStackUseCase(),
-    private val toggleNoteReadStatusUseCase: ToggleNoteReadStatusUseCase = ToggleNoteReadStatusUseCase(
-        repository = repository
-    )
+class NoteListViewModel @Inject constructor(
+    private val repository: NoteRepository,
+    private val prepareUseCase: PrepareNoteListUseCase,
+    private val buildNoteListUiUseCase: BuildNoteListUiUseCase,
+    private val toggleStackUseCase: ToggleStackUseCase,
+    private val toggleNoteReadStatusUseCase: ToggleNoteReadStatusUseCase
 ) : ViewModel() {
 
     private val expandedStacks = MutableStateFlow<Map<List<UUID>, Boolean>>(emptyMap())

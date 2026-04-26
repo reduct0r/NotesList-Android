@@ -6,8 +6,9 @@ import com.example.noteslist.domain.model.list.DateHeaderItem
 import com.example.noteslist.domain.model.list.ImportantNoteItem
 import com.example.noteslist.domain.model.list.ListItem
 import com.example.noteslist.domain.model.list.NoteStackItem
+import jakarta.inject.Inject
 
-class PrepareNoteListUseCase {
+class PrepareNoteListUseCase @Inject constructor() {
 
     operator fun invoke(notes: List<Note>): List<ListItem> {
         val groupedByDate = notes
