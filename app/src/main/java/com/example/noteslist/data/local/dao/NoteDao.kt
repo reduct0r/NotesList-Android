@@ -2,6 +2,7 @@ package com.example.noteslist.data.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.example.noteslist.data.local.entity.NoteEntity
@@ -13,6 +14,9 @@ interface NoteDao {
     @Query("SELECT * FROM notes")
     fun getAll(): Flow<List<NoteEntity>>
 
+    @Query("SELECT COUNT(*) FROM notes")
+    suspend fun getCount(): Int
+
     @Query("UPDATE notes SET isRead = :isRead WHERE id = :id")
     suspend fun updateReadStatus(id: String, isRead: Boolean)
 
@@ -22,9 +26,9 @@ interface NoteDao {
     @Update
     suspend fun update(note: NoteEntity)
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertAll(notes: List<NoteEntity>)
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(notes: NoteEntity)
 }

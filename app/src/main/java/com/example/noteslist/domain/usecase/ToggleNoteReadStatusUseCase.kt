@@ -7,7 +7,7 @@ import jakarta.inject.Inject
 class ToggleNoteReadStatusUseCase @Inject constructor(
     private val repository: NoteRepository
 ) {
-    operator fun invoke(note: Note) {
+    suspend operator fun invoke(note: Note) {
         repository.updateNote(note.copy(isRead = !note.isRead))
     }
 }

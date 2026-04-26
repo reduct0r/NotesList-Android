@@ -2,7 +2,6 @@ package com.example.noteslist.presentation.notesList
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.noteslist.data.repository.NoteRepositoryImpl
 import com.example.noteslist.domain.repository.NoteRepository
 import com.example.noteslist.domain.model.list.ListItem
 import com.example.noteslist.domain.model.list.NoteStackItem
@@ -16,8 +15,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 class NoteListViewModel @Inject constructor(
     private val repository: NoteRepository,
@@ -52,8 +53,10 @@ class NoteListViewModel @Inject constructor(
 
     fun toggleNoteReadStatus(noteId: UUID?) {
         val targetId = noteId ?: return
-        repository.notes.value.firstOrNull { it.id == targetId }?.let { note ->
-            toggleNoteReadStatusUseCase(note)
+        viewModelScope.launch {
+            repository.notes.first().firstOrNull { it.id == targetId }?.let { note ->
+                toggleNoteReadStatusUseCase(note)
+            }
         }
     }
 
