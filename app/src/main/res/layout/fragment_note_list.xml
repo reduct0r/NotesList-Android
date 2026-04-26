@@ -25,4 +25,14 @@
         android:src="@drawable/edit"
         android:layout_margin="16dp" />
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/settings_fab"
+        android:layout_width="246dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|top"
+        android:contentDescription="@string/settings_button"
+        android:src="@drawable/edit"
+        android:translationY="5dp"
+        android:translationX="40dp" />
+
 </FrameLayout>
