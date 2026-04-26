@@ -15,5 +15,4 @@ class NoteListApp : Application() {
             .factory()
             .create(this)
     }
-
 }

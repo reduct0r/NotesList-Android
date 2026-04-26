@@ -1,5 +1,6 @@
 package com.example.noteslist.presentation.notesList
 
+import android.content.Context
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
@@ -42,6 +43,14 @@ class NoteListFragment: Fragment() {
     private var pendingWasAtBottom: Boolean? = null
     private var isRecyclerStateRestored = false
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+
+        (requireContext().applicationContext as NoteListApp)
+            .appComponent
+            .inject(this)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         pendingRecyclerState = savedInstanceState?.let {
@@ -54,10 +63,6 @@ class NoteListFragment: Fragment() {
                 null
             }
         }
-
-        (requireContext().applicationContext as NoteListApp)
-            .appComponent
-            .inject(this)
     }
 
     override fun onCreateView(
