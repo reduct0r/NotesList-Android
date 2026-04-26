@@ -24,18 +24,14 @@ import kotlinx.coroutines.launch
 
 class NoteDetailsViewModel @AssistedInject constructor(
     private val repository: NoteRepositoryImpl,
+    private val createNewNoteUseCase: CreateNewNoteUseCase,
     @Assisted private val noteId: UUID?
 ) : ViewModel() {
-
-    private val createNewNoteUseCase = CreateNewNoteUseCase()
-
     private val _uiState = MutableStateFlow(NoteDetailsUiState())
     val uiState: StateFlow<NoteDetailsUiState> = _uiState.asStateFlow()
 
     private val _events = MutableSharedFlow<UiEvent>()
     val events: SharedFlow<UiEvent> = _events.asSharedFlow()
-
-    private val newNoteTemplate: Note = createNewNoteUseCase()
 
     init {
         if (noteId == null) {
@@ -69,8 +65,6 @@ class NoteDetailsViewModel @AssistedInject constructor(
         }
     }
 
-    // region UI events
-
     fun onTitleChanged(value: String) {
         _uiState.update { it.copy(title = value) }
     }
@@ -86,10 +80,6 @@ class NoteDetailsViewModel @AssistedInject constructor(
     fun onReadChanged(value: Boolean) {
         _uiState.update { it.copy(isRead = value, isReadManuallyEdited = true) }
     }
-
-    // endregion
-
-    // region save
 
     fun onSaveClicked() {
         val state = _uiState.value
@@ -127,12 +117,8 @@ class NoteDetailsViewModel @AssistedInject constructor(
         navigateBack()
     }
 
-    // endregion
-
-    // region helpers
-
     private fun buildNoteFromState(state: NoteDetailsUiState): Note {
-        val base = state.currentNote ?: newNoteTemplate
+        val base = state.currentNote ?: createNewNoteUseCase()
         return base.copy(
             title = state.title,
             content = state.content,
@@ -141,17 +127,11 @@ class NoteDetailsViewModel @AssistedInject constructor(
         )
     }
 
-    fun clearDraft() {
-        _uiState.value = NoteDetailsUiState()
-    }
-
     private fun navigateBack() {
         viewModelScope.launch {
             _events.emit(UiEvent.NavigateBack)
         }
     }
-
-    // endregion
 
     sealed interface UiEvent {
         data object NavigateBack : UiEvent

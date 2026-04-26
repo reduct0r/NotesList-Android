@@ -61,5 +61,4 @@ class  NoteRepositoryImpl @Inject constructor(): NoteRepository {
         private const val HOUR = 3600000L
         private const val DAY = 86400000L
     }
-
 }

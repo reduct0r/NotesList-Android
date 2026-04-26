@@ -40,7 +40,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+        onBackPressedDispatcher.addCallback(this,
+            object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (isTwoPaneMode()) {
                     if (isNoteDetailsPaneOpened()) {
@@ -111,13 +112,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isNoteDetailsPaneOpened(): Boolean {
-        return isTwoPaneMode() && supportFragmentManager.findFragmentById(binding.detailContainer?.id ?: return false) != null
+        return isTwoPaneMode() && supportFragmentManager
+            .findFragmentById(binding.detailContainer?.id ?: return false) != null
     }
 
     private fun syncTwoPaneStateIfNeeded() {
         if (!isTwoPaneMode()) return
 
-        val navHost = supportFragmentManager.findFragmentById(binding.navHostFragment.id) as? NavHostFragment
+        val navHost = supportFragmentManager
+            .findFragmentById(binding.navHostFragment.id) as? NavHostFragment
         val navController = navHost?.navController ?: return
 
         if (navController.currentDestination?.id != R.id.noteDetailsFragment) return
@@ -136,7 +139,8 @@ class MainActivity : AppCompatActivity() {
         if (isTwoPaneMode()) return
 
         val note = pendingSinglePaneNote ?: return
-        val navHost = supportFragmentManager.findFragmentById(binding.navHostFragment.id) as? NavHostFragment
+        val navHost = supportFragmentManager
+            .findFragmentById(binding.navHostFragment.id) as? NavHostFragment
         val navController = navHost?.navController ?: return
 
         if (navController.currentDestination?.id == R.id.noteListFragment) {
