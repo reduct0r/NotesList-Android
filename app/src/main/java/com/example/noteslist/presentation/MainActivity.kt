@@ -14,6 +14,7 @@ import com.example.noteslist.databinding.ActivityMainBinding
 import com.example.noteslist.domain.model.Note
 import com.example.noteslist.presentation.noteDetails.NoteDetailsFragment
 import com.example.noteslist.presentation.noteDetails.NoteDetailsFragmentArgs
+import com.example.noteslist.presentation.notesList.NoteListFragmentDirections
 
 
 class MainActivity : AppCompatActivity() {
@@ -139,7 +140,9 @@ class MainActivity : AppCompatActivity() {
         val navController = navHost?.navController ?: return
 
         if (navController.currentDestination?.id == R.id.noteListFragment) {
-            navController.navigate(R.id.noteDetailsFragment, NoteDetailsFragmentArgs(note).toBundle())
+            val direction = NoteListFragmentDirections
+                .actionNoteListFragmentToNoteDetailsFragment(note)
+            navController.navigate(direction)
         }
         pendingSinglePaneNote = null
     }

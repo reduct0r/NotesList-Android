@@ -2,8 +2,8 @@ package com.example.noteslist.di
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import dagger.internal.Provider
 import javax.inject.Inject
+import javax.inject.Provider
 
 @Suppress("UNCHECKED_CAST")
 class AppViewModelFactory @Inject constructor(
