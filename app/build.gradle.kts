@@ -6,6 +6,7 @@ plugins {
     id("androidx.navigation.safeargs.kotlin")
     id("kotlin-kapt")
     id("com.google.devtools.ksp") version "2.2.21-2.0.4"
+    id("androidx.room")
 }
 
 android {
@@ -44,6 +45,11 @@ android {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
         }
     }
+
+    room {
+        schemaDirectory("$projectDir/schemas")
+    }
+
 }
 
 dependencies {
