@@ -1,5 +1,6 @@
 package com.example.noteslist.presentation.noteDetails
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -32,11 +33,13 @@ class NoteDetailsFragment : Fragment() {
         }
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
 
         (requireContext().applicationContext as NoteListApp)
             .appComponent
+            .noteDetailsComponent()
+            .create()
             .inject(this)
     }
 

@@ -48,6 +48,8 @@ class NoteListFragment: Fragment() {
 
         (requireContext().applicationContext as NoteListApp)
             .appComponent
+            .noteListComponent()
+            .create()
             .inject(this)
     }
 

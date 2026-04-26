@@ -15,8 +15,6 @@ import javax.inject.Singleton
     ]
 )
 interface AppComponent {
-    fun inject(fragment: NoteListFragment)
-    fun inject(fragment: NoteDetailsFragment)
 
     @Component.Factory
     interface Factory {
@@ -24,4 +22,8 @@ interface AppComponent {
             @BindsInstance appContext: Context
         ): AppComponent
     }
+
+    fun noteDetailsComponent(): NoteDetailsComponent.Factory
+    fun noteListComponent(): NoteListComponent.Factory
 }
+
