@@ -19,6 +19,8 @@ navigationFragmentKtxVersion = "2.7.3"
 navigationSafeArgsGradlePlugin = "2.9.7"
 navigationUiKtx = "2.7.3"
 recyclerview = "1.4.0"
+roomCompiler = "2.8.4"
+roomRuntime = "2.8.4"
 runtime = "1.10.6"
 material3 = "1.4.0"
 
@@ -45,6 +47,8 @@ androidx-navigation-safe-args-gradle-plugin = { module = "androidx.navigation:na
 androidx-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigationFragmentKtx" }
 androidx-navigation-ui-ktx-v273 = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigationUiKtx" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomCompiler" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 androidx-ui = { module = "androidx.compose.ui:ui" }
 androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }

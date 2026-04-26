@@ -5,6 +5,7 @@ plugins {
     id("kotlin-parcelize")
     id("androidx.navigation.safeargs.kotlin")
     id("kotlin-kapt")
+    id("com.google.devtools.ksp") version "2.2.21-2.0.4"
 }
 
 android {
@@ -78,4 +79,7 @@ dependencies {
 
     implementation(libs.dagger)
     kapt(libs.dagger.compiler)
+
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
 }
