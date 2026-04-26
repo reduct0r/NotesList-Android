@@ -1,0 +1,22 @@
+package com.example.noteslist.di
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import com.example.noteslist.presentation.noteDetails.NoteDetailsViewModel
+import java.util.UUID
+import javax.inject.Inject
+
+@ScreenScope
+class NoteDetailsScreenViewModelFactory @Inject constructor(
+    private val assistedFactory: NoteDetailsViewModel.Factory,
+    private val noteId: UUID?
+) : ViewModelProvider.Factory {
+
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(NoteDetailsViewModel::class.java)) {
+            return assistedFactory.create(noteId) as T
+        }
+        throw IllegalArgumentException("Unknown model class $modelClass")
+    }
+}

@@ -4,7 +4,7 @@ import com.example.noteslist.presentation.notesList.NoteListFragment
 import dagger.Subcomponent
 
 @ScreenScope
-@Subcomponent
+@Subcomponent(modules = [NoteListScreenModule::class])
 interface NoteListComponent {
 
     fun inject(fragment: NoteListFragment)

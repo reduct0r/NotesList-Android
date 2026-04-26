@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
@@ -17,20 +16,15 @@ import com.example.noteslist.domain.model.Note
 import com.example.noteslist.presentation.MainActivity
 import javax.inject.Inject
 
-@Suppress("UNCHECKED_CAST")
 class NoteDetailsFragment : Fragment() {
 
     @Inject
-    lateinit var vmFactory: NoteDetailsViewModel.Factory
+    lateinit var viewModelFactory: ViewModelProvider.Factory
 
     private val args: NoteDetailsFragmentArgs by navArgs()
 
     private val viewModel: NoteDetailsViewModel by viewModels {
-        object : ViewModelProvider.Factory {
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return vmFactory.create(args.note?.id) as T
-            }
-        }
+        viewModelFactory
     }
 
     override fun onAttach(context: Context) {
@@ -39,7 +33,7 @@ class NoteDetailsFragment : Fragment() {
         (requireContext().applicationContext as NoteListApp)
             .appComponent
             .noteDetailsComponent()
-            .create()
+            .create(args.note?.id)
             .inject(this)
     }
 
