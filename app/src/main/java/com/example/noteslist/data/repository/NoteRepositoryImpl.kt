@@ -1,6 +1,6 @@
 package com.example.noteslist.data.repository
 
-import com.example.noteslist.domain.NoteRepository
+import com.example.noteslist.domain.repository.NoteRepository
 import com.example.noteslist.domain.model.Note
 import java.util.UUID
 import kotlinx.coroutines.flow.MutableStateFlow

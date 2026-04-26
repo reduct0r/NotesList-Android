@@ -2,7 +2,7 @@ package com.example.noteslist.presentation.noteDetails
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.noteslist.domain.NoteRepository
+import com.example.noteslist.domain.repository.NoteRepository
 import com.example.noteslist.domain.model.Note
 import com.example.noteslist.domain.model.isNew
 import com.example.noteslist.domain.usecase.CreateNewNoteUseCase

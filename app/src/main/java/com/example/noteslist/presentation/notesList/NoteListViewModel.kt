@@ -3,7 +3,7 @@ package com.example.noteslist.presentation.notesList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.noteslist.data.repository.NoteRepositoryImpl
-import com.example.noteslist.domain.NoteRepository
+import com.example.noteslist.domain.repository.NoteRepository
 import com.example.noteslist.domain.model.list.ListItem
 import com.example.noteslist.domain.model.list.NoteStackItem
 import com.example.noteslist.domain.usecase.BuildNoteListUiUseCase
