@@ -2,14 +2,13 @@ package com.example.noteslist.presentation.noteDetails
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.noteslist.data.repository.NoteRepositoryImpl
+import com.example.noteslist.domain.NoteRepository
 import com.example.noteslist.domain.model.Note
 import com.example.noteslist.domain.model.isNew
 import com.example.noteslist.domain.usecase.CreateNewNoteUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
-import jakarta.inject.Inject
 import java.util.UUID
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -23,7 +22,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class NoteDetailsViewModel @AssistedInject constructor(
-    private val repository: NoteRepositoryImpl,
+    private val repository: NoteRepository,
     private val createNewNoteUseCase: CreateNewNoteUseCase,
     @Assisted private val noteId: UUID?
 ) : ViewModel() {

@@ -1,6 +1,5 @@
 package com.example.noteslist.domain.usecase
 
-import com.example.noteslist.data.repository.NoteRepositoryImpl
 import com.example.noteslist.domain.NoteRepository
 import com.example.noteslist.domain.model.Note
 import jakarta.inject.Inject
