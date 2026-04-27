@@ -20,7 +20,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -42,21 +44,38 @@ class NoteListViewModel @Inject constructor(
     private val pendingExpandAnimations = mutableSetOf<List<UUID>>()
     private var isStackSettingsInitialized = false
     private var loadPersistedSettingsJob: Job? = null
+    private var searchDebounceJob: Job? = null
 
     private val _stackSettings = MutableStateFlow(StackSettings())
     val stackSettings: StateFlow<StackSettings> = _stackSettings
+
     private val _showInitialShimmer = MutableStateFlow(appLaunchTracker.shouldShowInitialShimmer())
     val showInitialShimmer: StateFlow<Boolean> = _showInitialShimmer
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
+    private val appliedSearchQuery = MutableStateFlow("")
+
     init {
         observeInitialLoad()
+        observeSearchQuery()
     }
 
     val uiItems: StateFlow<List<ListItem>> = combine(
         repository.notes,
-        expandedStacks
-    ) { notes, expanded ->
-        val baseItems = prepareUseCase(notes)
+        expandedStacks,
+        appliedSearchQuery
+    ) { notes, expanded, query ->
+        val visibleNotes = if (query.isBlank()) {
+            notes
+        } else {
+            notes.filter { note ->
+                note.title.contains(query, ignoreCase = true)
+            }
+        }
+
+        val baseItems = prepareUseCase(visibleNotes)
         val (items, consumedAnimations) = buildNoteListUiUseCase(
             baseItems = baseItems,
             expandedStacks = expanded,
@@ -71,6 +90,10 @@ class NoteListViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5_000),
         initialValue = emptyList()
     )
+
+    fun onSearchQueryChanged(value: String) {
+        _searchQuery.value = value
+    }
 
     fun toggleNoteReadStatus(noteId: UUID?) {
         val targetId = noteId ?: return
@@ -147,7 +170,31 @@ class NoteListViewModel @Inject constructor(
         }
     }
 
+    private fun observeSearchQuery() {
+        viewModelScope.launch {
+            _searchQuery.collect { rawQuery ->
+                searchDebounceJob?.cancel()
+
+                val normalizedQuery = rawQuery.trim()
+                if (normalizedQuery.isEmpty()) {
+                    if (appliedSearchQuery.value.isNotEmpty()) {
+                        appliedSearchQuery.value = ""
+                    }
+                    return@collect
+                }
+
+                searchDebounceJob = launch {
+                    delay(SEARCH_DEBOUNCE_MS)
+                    if (appliedSearchQuery.value != normalizedQuery) {
+                        appliedSearchQuery.value = normalizedQuery
+                    }
+                }
+            }
+        }
+    }
+
     private companion object {
         private const val MIN_SHIMMER_DURATION_MS = 5000L
+        private const val SEARCH_DEBOUNCE_MS = 300L
     }
 }

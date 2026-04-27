@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.BundleCompat
 import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -109,6 +110,15 @@ class NoteListFragment: Fragment() {
             showBottomSheet()
         }
 
+        if (binding.searchEditText.text?.toString() != viewModel.searchQuery.value) {
+            binding.searchEditText.setText(viewModel.searchQuery.value)
+            binding.searchEditText.setSelection(binding.searchEditText.text?.length ?: 0)
+        }
+
+        binding.searchEditText.doAfterTextChanged { editable ->
+            viewModel.onSearchQueryChanged(editable?.toString().orEmpty())
+        }
+
         adapter = NoteListAdapter(
             onNoteClick = { note ->
                 openDetails(note)
@@ -149,6 +159,17 @@ class NoteListFragment: Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.showInitialShimmer.collect { shouldShow ->
                     renderShimmer(shouldShow)
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.searchQuery.collect { query ->
+                    if (binding.searchEditText.text?.toString() != query) {
+                        binding.searchEditText.setText(query)
+                        binding.searchEditText.setSelection(query.length)
+                    }
                 }
             }
         }
