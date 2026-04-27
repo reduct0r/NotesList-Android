@@ -12,12 +12,15 @@ import com.example.noteslist.domain.model.list.NoteStackItem
 import com.example.noteslist.presentation.adapter.delegates.DateHeaderDelegate
 import com.example.noteslist.presentation.adapter.delegates.ImportantNoteDelegate
 import com.example.noteslist.presentation.adapter.delegates.NoteStackDelegate
+import com.example.noteslist.presentation.notesList.StackSettings
 
 class NoteListAdapter(
     private val onNoteClick: (Note) -> Unit,
     private val onNoteLongClick: (Note) -> Unit,
     private val onToggleStack: (NoteStackItem) -> Unit
 ) : ListAdapter<ListItem, RecyclerView.ViewHolder>(DiffCallback()) {
+
+    private var stackSettings = StackSettings()
 
     init {
         stateRestorationPolicy = StateRestorationPolicy.PREVENT_WHEN_EMPTY
@@ -27,11 +30,18 @@ class NoteListAdapter(
         DateHeaderDelegate(),
         ImportantNoteDelegate(onClick = onNoteClick, onLongClick = onNoteLongClick),
         NoteStackDelegate(
+            stackSettingsProvider = { stackSettings },
             onNoteClick = onNoteClick,
             onNoteLongClick = onNoteLongClick,
             onToggleStack = onToggleStack
         )
     )
+
+    fun updateStackSettings(settings: StackSettings) {
+        if (stackSettings == settings) return
+        stackSettings = settings
+        notifyDataSetChanged()
+    }
 
     override fun getItemViewType(position: Int): Int {
         return delegates.indexOfFirst { it.isForViewType(currentList, position) }

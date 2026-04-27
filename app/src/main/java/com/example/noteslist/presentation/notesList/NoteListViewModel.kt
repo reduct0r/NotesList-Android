@@ -2,6 +2,7 @@ package com.example.noteslist.presentation.notesList
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.noteslist.data.local.settings.StackSettingsStore
 import com.example.noteslist.domain.repository.NoteRepository
 import com.example.noteslist.domain.model.list.ListItem
 import com.example.noteslist.domain.model.list.NoteStackItem
@@ -18,9 +19,12 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.updateAndGet
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class NoteListViewModel @Inject constructor(
+    private val stackSettingsStore: StackSettingsStore,
     private val repository: NoteRepository,
     private val prepareUseCase: PrepareNoteListUseCase,
     private val buildNoteListUiUseCase: BuildNoteListUiUseCase,
@@ -30,6 +34,11 @@ class NoteListViewModel @Inject constructor(
 
     private val expandedStacks = MutableStateFlow<Map<List<UUID>, Boolean>>(emptyMap())
     private val pendingExpandAnimations = mutableSetOf<List<UUID>>()
+    private var isStackSettingsInitialized = false
+    private var loadPersistedSettingsJob: Job? = null
+
+    private val _stackSettings = MutableStateFlow(StackSettings())
+    val stackSettings: StateFlow<StackSettings> = _stackSettings
 
     val uiItems: StateFlow<List<ListItem>> = combine(
         repository.notes,
@@ -72,6 +81,34 @@ class NoteListViewModel @Inject constructor(
                     )
                 )
             }
+        }
+    }
+
+    fun initializeStackSettingsIfNeeded(settings: StackSettings) {
+        if (isStackSettingsInitialized) return
+        isStackSettingsInitialized = true
+        _stackSettings.value = settings
+
+        loadPersistedSettingsJob = viewModelScope.launch {
+            stackSettingsStore.getStackSettings()?.let { persistedSettings ->
+                _stackSettings.value = persistedSettings
+            }
+        }
+    }
+
+    fun updateStackSettings(stackSpacing: Int, maxVisible: Int) {
+        loadPersistedSettingsJob?.cancel()
+        loadPersistedSettingsJob = null
+
+        val updatedSettings = _stackSettings.updateAndGet {
+            it.copy(
+                stackSpacing = stackSpacing.coerceAtLeast(0),
+                stackMaxVisible = maxVisible.coerceAtLeast(1)
+            )
+        }
+
+        viewModelScope.launch {
+            stackSettingsStore.saveStackSettings(updatedSettings)
         }
     }
 }

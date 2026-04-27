@@ -7,8 +7,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.BundleCompat
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
 import com.example.noteslist.NoteListApp
 import com.example.noteslist.databinding.FragmentNoteListBinding
+import com.example.noteslist.databinding.ItemNoteStackBinding
 import com.example.noteslist.domain.model.Note
 import com.example.noteslist.presentation.MainActivity
 import com.example.noteslist.presentation.adapter.NoteListAdapter
@@ -34,7 +35,7 @@ class NoteListFragment: Fragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
-    private val viewModel by viewModels<NoteListViewModel> {
+    private val viewModel by activityViewModels<NoteListViewModel> {
         viewModelFactory
     }
 
@@ -127,6 +128,8 @@ class NoteListFragment: Fragment() {
             layoutManager = LinearLayoutManager(requireContext())
         }
 
+        viewModel.initializeStackSettingsIfNeeded(resolveDefaultStackSettings())
+
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiItems.collect { items ->
@@ -135,10 +138,18 @@ class NoteListFragment: Fragment() {
                 }
             }
         }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.stackSettings.collect { settings ->
+                    adapter.updateStackSettings(settings)
+                }
+            }
+        }
     }
 
-    fun showBottomSheet() {
-        MyBottomSheet().show(parentFragmentManager, "MyBottomSheet")
+    private fun showBottomSheet() {
+        SettingsBottomSheet().show(childFragmentManager, SETTINGS_BOTTOM_SHEET_TAG)
     }
 
     private fun restoreRecyclerStateIfNeeded() {
@@ -214,9 +225,14 @@ class NoteListFragment: Fragment() {
         findNavController().navigate(direction)
     }
 
+    private fun resolveDefaultStackSettings(): StackSettings {
+        return ItemNoteStackBinding.inflate(layoutInflater).noteStack.getStackSettings()
+    }
+
     companion object {
         private const val FAB_SCROLL_HIDE_THRESHOLD = 0
         private const val KEY_RECYCLER_STATE = "key_recycler_state"
         private const val KEY_RECYCLER_WAS_AT_BOTTOM = "key_recycler_was_at_bottom"
+        private const val SETTINGS_BOTTOM_SHEET_TAG = "settings"
     }
 }

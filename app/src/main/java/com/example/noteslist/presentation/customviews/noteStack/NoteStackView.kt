@@ -8,12 +8,13 @@ import android.view.MotionEvent
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.withStyledAttributes
-import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import com.example.noteslist.R
 import com.example.noteslist.domain.model.Note
 import com.example.noteslist.domain.model.getTimeString
 import com.example.noteslist.presentation.customviews.note.NoteView
+import com.example.noteslist.presentation.notesList.StackSettings
+import kotlin.math.roundToInt
 
 class NoteStackView @JvmOverloads constructor(
     context: Context,
@@ -21,9 +22,9 @@ class NoteStackView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : ViewGroup(context, attrs, defStyleAttr) {
 
-    private var childSpacing: Int = DEFAULT_CHILD_SPACING_DP.dpToPx()
+    private var stackSpacingPx: Int = DEFAULT_STACK_SPACING_DP.dpToPx()
+    private var expandedSpacingPx: Int = DEFAULT_EXPANDED_SPACING_DP.dpToPx()
     private var stackMaxVisible: Int = DEFAULT_MAX_VISIBLE
-    private var stackElementOffset: Int = DEFAULT_STACK_OFFSET_DP.dpToPx()
     private var elementsElevation: Int = DEFAULT_ELEVATION.dpToPx()
 
     private val noteViews = mutableListOf<NoteView>()
@@ -39,11 +40,39 @@ class NoteStackView @JvmOverloads constructor(
         clipToPadding = false
 
         context.withStyledAttributes(attrs, R.styleable.NoteStackView, defStyleAttr, 0) {
-            childSpacing = getDimensionPixelSize(R.styleable.NoteStackView_stackSpacing, DEFAULT_CHILD_SPACING_DP.dpToPx())
+            stackSpacingPx = getDimensionPixelSize(
+                R.styleable.NoteStackView_stackSpacing,
+                DEFAULT_STACK_SPACING_DP.dpToPx()
+            )
+            expandedSpacingPx = getDimensionPixelSize(
+                R.styleable.NoteStackView_stackElOffset,
+                DEFAULT_EXPANDED_SPACING_DP.dpToPx()
+            )
             stackMaxVisible = getInt(R.styleable.NoteStackView_stackMaxVisible, DEFAULT_MAX_VISIBLE)
-            stackElementOffset = getDimensionPixelSize(R.styleable.NoteStackView_stackElOffset, DEFAULT_STACK_OFFSET_DP.dpToPx())
             elementsElevation = getDimensionPixelSize(R.styleable.NoteStackView_elementsElevation, DEFAULT_ELEVATION.dpToPx())
         }
+    }
+
+    fun getStackSettings(): StackSettings {
+        return StackSettings(
+            stackSpacing = stackSpacingPx.pxToDp(),
+            stackMaxVisible = stackMaxVisible
+        )
+    }
+
+    fun applySettings(settings: StackSettings) {
+        stackSpacingPx = settings.stackSpacing.coerceAtLeast(0).dpToPx()
+        stackMaxVisible = settings.stackMaxVisible.coerceAtLeast(1)
+
+        if (noteViews.isNotEmpty()) {
+            updateVisibilityAndButton(
+                isExpanded = isCurrentlyExpanded(),
+                isSingleNote = isSingleNote()
+            )
+        }
+
+        requestLayout()
+        invalidate()
     }
 
     fun setNotes(
@@ -108,8 +137,8 @@ class NoteStackView @JvmOverloads constructor(
                 }
             }
         } else {
-            for (i in stackMaxVisible until noteViews.size) {
-                noteViews[i].isGone = true
+            noteViews.forEachIndexed { index, noteView ->
+                noteView.isVisible = index < stackMaxVisible
             }
             collapseButton?.let {
                 removeView(it)
@@ -181,10 +210,13 @@ class NoteStackView @JvmOverloads constructor(
         }
 
         val totalHeight = if (isExpanded || isSingleNote) {
-            childrenToMeasure.filter { it.isVisible }
-                .sumOf { it.measuredHeight + childSpacing }
+            childrenToMeasure
+                .filter { it.isVisible }
+                .sumOf { it.measuredHeight } +
+                (childrenToMeasure.count { it.isVisible } - 1).coerceAtLeast(0) * expandedSpacingPx
         } else if (childrenToMeasure.isNotEmpty()) {
-            childrenToMeasure[0].measuredHeight + (childrenToMeasure.size - 1) * stackElementOffset
+            childrenToMeasure.first().measuredHeight +
+                (childrenToMeasure.size - 1).coerceAtLeast(0) * stackSpacingPx
         } else {
             0
         }
@@ -197,13 +229,14 @@ class NoteStackView @JvmOverloads constructor(
         var currentTop = 0
         val isExpanded = isCurrentlyExpanded()
         val isSingleNote = isSingleNote()
+        val collapsedTops = buildCollapsedTops()
 
         if (isExpanded || isSingleNote) {
             noteViews.forEach { child ->
                 if (child.isVisible) {
                     val h = child.measuredHeight
                     child.layout(0, currentTop, parentWidth, currentTop + h)
-                    currentTop += h + childSpacing
+                    currentTop += h + expandedSpacingPx
                 }
             }
             collapseButton?.let { btn ->
@@ -217,7 +250,7 @@ class NoteStackView @JvmOverloads constructor(
                 expandAnimator.startExpandAnimation(
                     noteViews = noteViews,
                     collapseButton = collapseButton,
-                    stackElementOffset = stackElementOffset,
+                    collapsedTops = collapsedTops,
                     elementsElevation = elementsElevation,
                     parentForPost = this
                 )
@@ -228,7 +261,7 @@ class NoteStackView @JvmOverloads constructor(
             visibleNotes.forEachIndexed { index, child ->
                 if (child.isVisible) {
                     val h = child.measuredHeight
-                    val topOffset = index * stackElementOffset
+                    val topOffset = collapsedTops[index]
                     child.layout(0, topOffset, parentWidth, topOffset + h)
                     child.elevation = (visibleCount - index) + elementsElevation.toFloat()
                 }
@@ -237,16 +270,36 @@ class NoteStackView @JvmOverloads constructor(
         }
     }
 
+    private fun buildCollapsedTops(): List<Int> {
+        if (noteViews.isEmpty()) return emptyList()
+
+        val visibleCount = minOf(stackMaxVisible, noteViews.size)
+        val collapsedTops = MutableList(noteViews.size) { 0 }
+
+        for (index in 0 until visibleCount) {
+            collapsedTops[index] = index * stackSpacingPx
+        }
+
+        val lastVisibleTop = collapsedTops[visibleCount - 1]
+        for (index in visibleCount until noteViews.size) {
+            collapsedTops[index] = lastVisibleTop
+        }
+
+        return collapsedTops
+    }
+
     private fun isSingleNote(): Boolean = noteViews.size == 1
 
     private fun isCurrentlyExpanded(): Boolean = collapseButton != null || isSingleNote()
 
     private fun Int.dpToPx(): Int = (this * resources.displayMetrics.density).toInt()
 
+    private fun Int.pxToDp(): Int = (this / resources.displayMetrics.density).roundToInt()
+
     companion object {
-        private const val DEFAULT_CHILD_SPACING_DP = 8
+        private const val DEFAULT_STACK_SPACING_DP = 8
+        private const val DEFAULT_EXPANDED_SPACING_DP = 20
         private const val DEFAULT_MAX_VISIBLE = 3
-        private const val DEFAULT_STACK_OFFSET_DP = 20
         private const val DEFAULT_ELEVATION = 4
 
         private const val COLLAPSE_BUTTON_HIDDEN_ALPHA = 0f

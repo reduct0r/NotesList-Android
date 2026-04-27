@@ -20,7 +20,7 @@ class StackExpandAnimator {
     fun startExpandAnimation(
         noteViews: List<NoteView>,
         collapseButton: TextView?,
-        stackElementOffset: Int,
+        collapsedTops: List<Int>,
         elementsElevation: Int,
         parentForPost: NoteStackView
     ) {
@@ -41,7 +41,7 @@ class StackExpandAnimator {
 
         noteViews.forEachIndexed { i, noteView ->
             val expandedTop = noteView.top
-            val collapsedTop = i * stackElementOffset
+            val collapsedTop = collapsedTops.getOrElse(i) { collapsedTops.lastOrNull() ?: 0 }
             val initTransY = (collapsedTop - expandedTop).toFloat()
 
             noteView.translationY = initTransY
