@@ -13,7 +13,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.example.noteslist.NoteListApp
-import com.example.noteslist.domain.model.Note
 import com.example.noteslist.presentation.MainActivity
 import javax.inject.Inject
 
@@ -34,7 +33,7 @@ class NoteDetailsFragment : Fragment() {
         (requireContext().applicationContext as NoteListApp)
             .appComponent
             .noteDetailsComponent()
-            .create(args.note?.id)
+            .create(args.note?.id, args.draftState)
             .inject(this)
     }
 
@@ -62,7 +61,7 @@ class NoteDetailsFragment : Fragment() {
         }
     }
 
-    fun getCurrentNoteForTransfer(): Note? {
-        return viewModel.uiState.value.currentNote ?: args.note
+    fun getDraftStateForTransfer(): NoteDetailsDraftState {
+        return viewModel.uiState.value.toDraftState(args.note)
     }
 }

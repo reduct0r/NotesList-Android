@@ -29,7 +29,8 @@ class NoteDetailsViewModel @AssistedInject constructor(
     @param:ApplicationScope private val applicationScope: CoroutineScope,
     private val repository: NoteRepository,
     private val createNewNoteUseCase: CreateNewNoteUseCase,
-    @Assisted private val noteId: UUID?
+    @Assisted private val noteId: UUID?,
+    @Assisted private val initialDraftState: NoteDetailsDraftState?
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(NoteDetailsUiState())
     val uiState: StateFlow<NoteDetailsUiState> = _uiState.asStateFlow()
@@ -40,34 +41,23 @@ class NoteDetailsViewModel @AssistedInject constructor(
     init {
         observeTitleValidation()
 
-        if (noteId == null) {
-            _uiState.value = NoteDetailsUiState(
-                isNewNote = true,
-                title = "",
-                content = "",
-                isImportant = false,
-                isRead = false
-            )
-        } else {
-            viewModelScope.launch {
-                repository.notes
-                    .map { notes -> notes.firstOrNull { it.id == noteId } }
-                    .distinctUntilChanged()
-                    .collect { note ->
-                        if (note == null) return@collect
-
-                        _uiState.update {
-                            it.copy(
-                                currentNote = note,
-                                title = note.title,
-                                content = note.content,
-                                isImportant = note.isImportant,
-                                isRead = note.isRead,
-                                isNewNote = false
-                            )
-                        }
-                    }
+        when {
+            initialDraftState != null -> {
+                _uiState.value = initialDraftState.toUiState()
+                if (noteId != null) {
+                    observeExistingNote(restoreDraft = true)
+                }
             }
+            noteId == null -> {
+                _uiState.value = NoteDetailsUiState(
+                    isNewNote = true,
+                    title = "",
+                    content = "",
+                    isImportant = false,
+                    isRead = false
+                )
+            }
+            else -> observeExistingNote(restoreDraft = false)
         }
     }
 
@@ -97,7 +87,7 @@ class NoteDetailsViewModel @AssistedInject constructor(
         applicationScope.launch {
             runCatching {
                 if (note.isNew()) {
-                    repository.addNote(note.copy(id = UUID.randomUUID()))
+                    repository.addNote(note)
                 } else {
                     repository.updateNote(note)
                 }
@@ -144,6 +134,35 @@ class NoteDetailsViewModel @AssistedInject constructor(
         }
     }
 
+    private fun observeExistingNote(restoreDraft: Boolean) {
+        viewModelScope.launch {
+            repository.notes
+                .map { notes -> notes.firstOrNull { it.id == noteId } }
+                .distinctUntilChanged()
+                .collect { note ->
+                    if (note == null) return@collect
+
+                    _uiState.update {
+                        if (restoreDraft) {
+                            it.copy(
+                                currentNote = note,
+                                isNewNote = false
+                            )
+                        } else {
+                            it.copy(
+                                currentNote = note,
+                                title = note.title,
+                                content = note.content,
+                                isImportant = note.isImportant,
+                                isRead = note.isRead,
+                                isNewNote = false
+                            )
+                        }
+                    }
+                }
+        }
+    }
+
     private fun buildNoteFromState(state: NoteDetailsUiState): Note {
         val base = state.currentNote ?: createNewNoteUseCase()
         return base.copy(
@@ -166,7 +185,10 @@ class NoteDetailsViewModel @AssistedInject constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(noteId: UUID?): NoteDetailsViewModel
+        fun create(
+            noteId: UUID?,
+            initialDraftState: NoteDetailsDraftState?
+        ): NoteDetailsViewModel
     }
 
     companion object {

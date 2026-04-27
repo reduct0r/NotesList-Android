@@ -1,6 +1,7 @@
 package com.example.noteslist.di
 
 import com.example.noteslist.presentation.noteDetails.NoteDetailsFragment
+import com.example.noteslist.presentation.noteDetails.NoteDetailsDraftState
 import dagger.BindsInstance
 import dagger.Subcomponent
 import java.util.UUID
@@ -14,7 +15,8 @@ interface NoteDetailsComponent {
     @Subcomponent.Factory
     interface Factory {
         fun create(
-            @BindsInstance noteId: UUID?
+            @BindsInstance noteId: UUID?,
+            @BindsInstance draftState: NoteDetailsDraftState?
         ): NoteDetailsComponent
     }
 }

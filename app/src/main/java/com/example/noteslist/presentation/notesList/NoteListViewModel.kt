@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.noteslist.data.local.settings.AppLaunchTracker
 import com.example.noteslist.data.local.settings.StackSettingsStore
 import com.example.noteslist.di.ApplicationScope
+import com.example.noteslist.domain.common.AppClock
 import com.example.noteslist.domain.repository.NoteRepository
 import com.example.noteslist.domain.model.list.ListItem
 import com.example.noteslist.domain.model.list.NoteStackItem
@@ -33,6 +34,7 @@ class NoteListViewModel @Inject constructor(
     @param:ApplicationScope private val applicationScope: CoroutineScope,
     private val appLaunchTracker: AppLaunchTracker,
     private val stackSettingsStore: StackSettingsStore,
+    private val appClock: AppClock,
     private val repository: NoteRepository,
     private val prepareUseCase: PrepareNoteListUseCase,
     private val buildNoteListUiUseCase: BuildNoteListUiUseCase,
@@ -155,11 +157,11 @@ class NoteListViewModel @Inject constructor(
         viewModelScope.launch {
             if (!_showInitialShimmer.value) return@launch
 
-            val shimmerStartedAt = System.currentTimeMillis()
+            val shimmerStartedAt = appClock.elapsedRealtime()
 
             repository.notes.first { it.isNotEmpty() }
 
-            val elapsed = System.currentTimeMillis() - shimmerStartedAt
+            val elapsed = appClock.elapsedRealtime() - shimmerStartedAt
             val remainingDuration = (MIN_SHIMMER_DURATION_MS - elapsed).coerceAtLeast(0L)
             if (remainingDuration > 0) {
                 delay(remainingDuration)

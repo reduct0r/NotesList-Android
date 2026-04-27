@@ -120,10 +120,10 @@ private fun NoteDetailsScreenExistingPreview() {
 @Composable
 private fun NoteDetailsContentPreview(isNew: Boolean) {
     val note = if (isNew) null else Note(
-        id = UUID.randomUUID(),
+        id = UUID.fromString("00000000-0000-0000-0000-000000000001"),
         title = "Сходить в магазин",
         content = "Купить молоко и хлеб",
-        createdAt = System.currentTimeMillis(),
+        createdAt = 1_700_000_000_000L,
         isImportant = true,
         isRead = false
     )

@@ -12,12 +12,14 @@ import javax.inject.Singleton
         CoroutineModule::class,
         RepositoryModule::class,
         DatabaseModule::class,
-        SettingsModule::class
+        SettingsModule::class,
+        PlatformModule::class
     ]
 )
 interface AppComponent {
 
     fun inject(app: NoteListApp)
+    fun inject(activity: com.example.noteslist.presentation.MainActivity)
 
     @Component.Factory
     interface Factory {
@@ -28,5 +30,6 @@ interface AppComponent {
 
     fun noteDetailsComponent(): NoteDetailsComponent.Factory
     fun noteListComponent(): NoteListComponent.Factory
+    fun settingsComponent(): SettingsComponent.Factory
 }
 

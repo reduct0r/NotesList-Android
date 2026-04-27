@@ -17,7 +17,7 @@ fun NoteEntity.toDomain(): Note {
 
 fun Note.toEntity(): NoteEntity {
     return NoteEntity(
-        id = id?.toString() ?: UUID.randomUUID().toString(),
+        id = requireNotNull(id) { "Note id is required to map Note to NoteEntity" }.toString(),
         title = title,
         content = content,
         createdAt = createdAt,

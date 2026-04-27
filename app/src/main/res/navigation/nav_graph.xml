@@ -24,6 +24,12 @@
             app:argType="com.example.noteslist.domain.model.Note"
             app:nullable="true"
             android:defaultValue="@null" />
+
+        <argument
+            android:name="draftState"
+            app:argType="com.example.noteslist.presentation.noteDetails.NoteDetailsDraftState"
+            app:nullable="true"
+            android:defaultValue="@null" />
     </fragment>
 
 

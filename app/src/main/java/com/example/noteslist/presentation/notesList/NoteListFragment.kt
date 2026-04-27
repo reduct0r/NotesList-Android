@@ -250,7 +250,7 @@ class NoteListFragment: Fragment() {
         }
 
         val direction = NoteListFragmentDirections
-            .actionNoteListFragmentToNoteDetailsFragment(note)
+            .actionNoteListFragmentToNoteDetailsFragment(note, null)
         findNavController().navigate(direction)
     }
 
