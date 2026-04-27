@@ -25,5 +25,5 @@
     <string name="cancel">Отмена</string>
     <string name="settings_button">settings_button</string>
     <string name="note_title_too_long_error">Слишком длинный заголовок, нужно сократить</string>
-    <string name="search_notes_hint">Поиск по заголовку</string>
+    <string name="search_notes_hint">Поиск</string>
 </resources>
