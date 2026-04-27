@@ -2,4 +2,9 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="unread_background">#FFFFFF</color>
+    <color name="read_background">#E8F5E8</color>
+    <color name="text_primary">#212121</color>
+    <color name="status_read">#4CAF50</color>
+    <color name="status_unread">#F44336</color>
 </resources>
