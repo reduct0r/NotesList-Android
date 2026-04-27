@@ -196,7 +196,7 @@ class NoteListViewModel @Inject constructor(
     }
 
     private companion object {
-        private const val MIN_SHIMMER_DURATION_MS = 5000L
+        private const val MIN_SHIMMER_DURATION_MS = 500L
         private const val SEARCH_DEBOUNCE_MS = 300L
     }
 }
