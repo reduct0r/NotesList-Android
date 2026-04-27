@@ -24,4 +24,5 @@
     <string name="close">Закрыть</string>
     <string name="cancel">Отмена</string>
     <string name="settings_button">settings_button</string>
+    <string name="note_title_too_long_error">Слишком длинный заголовок, нужно сократить</string>
 </resources>

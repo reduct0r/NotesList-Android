@@ -9,10 +9,14 @@ data class NoteDetailsUiState(
     val isImportant: Boolean = false,
     val isRead: Boolean = false,
     val isReadManuallyEdited: Boolean = false,
+    val isTitleTooLong: Boolean = false,
     val showUnsavedDialog: Boolean = false,
     val isNewNote: Boolean = true,
     val isSaving: Boolean = false
 ) {
+    val canSave: Boolean
+        get() = title.isNotBlank() && !isTitleTooLong && !isSaving
+
     val hasChanges: Boolean
         get() = title != (currentNote?.title ?: "") ||
                 content != (currentNote?.content ?: "") ||

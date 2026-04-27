@@ -205,6 +205,7 @@ private fun NoteDetailsScreenScaffold(
                     NoteEditableFields(
                         title = uiState.title,
                         content = uiState.content,
+                        isTitleTooLong = uiState.isTitleTooLong,
                         onTitleChanged = onTitleChanged,
                         onContentChanged = onContentChanged,
                         modifier = Modifier
@@ -231,7 +232,7 @@ private fun NoteDetailsScreenScaffold(
 
                     NoteSaveButton(
                         isNewNote = uiState.isNewNote,
-                        isSaving = uiState.isSaving,
+                        canSave = uiState.canSave,
                         onSave = onSave
                     )
                 }
@@ -248,6 +249,7 @@ private fun NoteDetailsScreenScaffold(
                 NoteEditableFields(
                     title = uiState.title,
                     content = uiState.content,
+                    isTitleTooLong = uiState.isTitleTooLong,
                     onTitleChanged = onTitleChanged,
                     onContentChanged = onContentChanged,
                     modifier = Modifier
@@ -265,7 +267,7 @@ private fun NoteDetailsScreenScaffold(
 
                 NoteSaveButton(
                     isNewNote = uiState.isNewNote,
-                    isSaving = uiState.isSaving,
+                    canSave = uiState.canSave,
                     onSave = onSave
                 )
             }
@@ -295,6 +297,7 @@ private fun NoteDetailsScreenScaffold(
 private fun NoteEditableFields(
     title: String,
     content: String,
+    isTitleTooLong: Boolean,
     onTitleChanged: (String) -> Unit,
     onContentChanged: (String) -> Unit,
     modifier: Modifier
@@ -304,7 +307,7 @@ private fun NoteEditableFields(
         onValueChange = onTitleChanged,
         label = { Text(stringResource(R.string.note_title_label)) },
         modifier = Modifier.fillMaxWidth(),
-        isError = title.isBlank(),
+        isError = title.isBlank() || isTitleTooLong,
         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
         singleLine = true
     )
@@ -312,6 +315,12 @@ private fun NoteEditableFields(
     if (title.isBlank()) {
         Text(
             text = stringResource(R.string.note_title_required_error),
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodySmall
+        )
+    } else if (isTitleTooLong) {
+        Text(
+            text = stringResource(R.string.note_title_too_long_error),
             color = MaterialTheme.colorScheme.error,
             style = MaterialTheme.typography.bodySmall
         )
@@ -366,12 +375,12 @@ private fun NoteFlagsAndMeta(
 @Composable
 private fun NoteSaveButton(
     isNewNote: Boolean,
-    isSaving: Boolean,
+    canSave: Boolean,
     onSave: () -> Unit
 ) {
     Button(
         onClick = onSave,
-        enabled = !isSaving,
+        enabled = canSave,
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(if (isNewNote) stringResource(R.string.add) else stringResource(R.string.save))

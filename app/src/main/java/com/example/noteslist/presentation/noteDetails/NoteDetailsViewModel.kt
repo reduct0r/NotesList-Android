@@ -12,6 +12,7 @@ import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.util.UUID
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class NoteDetailsViewModel @AssistedInject constructor(
     @param:ApplicationScope private val applicationScope: CoroutineScope,
@@ -36,6 +38,8 @@ class NoteDetailsViewModel @AssistedInject constructor(
     val events: SharedFlow<UiEvent> = _events.asSharedFlow()
 
     init {
+        observeTitleValidation()
+
         if (noteId == null) {
             _uiState.value = NoteDetailsUiState(
                 isNewNote = true,
@@ -85,7 +89,7 @@ class NoteDetailsViewModel @AssistedInject constructor(
 
     fun onSaveClicked() {
         val state = _uiState.value
-        if (state.title.isBlank() || state.isSaving) return
+        if (!state.canSave) return
 
         val note = buildNoteFromState(state)
         _uiState.update { it.copy(isSaving = true) }
@@ -122,6 +126,24 @@ class NoteDetailsViewModel @AssistedInject constructor(
         navigateBack()
     }
 
+    private fun observeTitleValidation() {
+        viewModelScope.launch {
+            _uiState
+                .map { it.title }
+                .distinctUntilChanged()
+                .map { title ->
+                    withContext(Dispatchers.Default) {
+                        title.codePointCount(0, title.length) > TITLE_MAX_LENGTH
+                    }
+                }
+                .collect { isTitleTooLong ->
+                    _uiState.update { currentState ->
+                        currentState.copy(isTitleTooLong = isTitleTooLong)
+                    }
+                }
+        }
+    }
+
     private fun buildNoteFromState(state: NoteDetailsUiState): Note {
         val base = state.currentNote ?: createNewNoteUseCase()
         return base.copy(
@@ -145,5 +167,9 @@ class NoteDetailsViewModel @AssistedInject constructor(
     @AssistedFactory
     interface Factory {
         fun create(noteId: UUID?): NoteDetailsViewModel
+    }
+
+    companion object {
+        const val TITLE_MAX_LENGTH = 50
     }
 }
