@@ -29,10 +29,10 @@
         android:id="@+id/settings_fab"
         android:layout_width="246dp"
         android:layout_height="wrap_content"
-        android:layout_gravity="end|top"
+        android:layout_gravity="start|top"
         android:contentDescription="@string/settings_button"
-        android:src="@drawable/edit"
+        android:src="@drawable/settings"
         android:translationY="5dp"
-        android:translationX="40dp" />
+        android:translationX="-45dp"/>
 
 </FrameLayout>

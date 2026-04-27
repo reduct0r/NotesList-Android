@@ -85,22 +85,18 @@ class NoteListFragment: Fragment() {
         binding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 val fab = binding.fab
-                val settingsFab = binding.settingsFab
                 when {
                     dy > FAB_SCROLL_HIDE_THRESHOLD && fab.isOrWillBeShown -> {
                         fab.hide()
-                        settingsFab.hide()
                     }
                     dy < -FAB_SCROLL_HIDE_THRESHOLD && fab.isOrWillBeShown -> {
                         fab.hide()
-                        settingsFab.hide()
                     }
                 }
             }
 
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 binding.fab.show()
-                binding.settingsFab.show()
             }
         })
 
