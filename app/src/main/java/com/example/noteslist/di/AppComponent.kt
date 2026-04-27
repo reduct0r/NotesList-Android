@@ -9,6 +9,7 @@ import javax.inject.Singleton
 @Singleton
 @Component(
     modules = [
+        CoroutineModule::class,
         RepositoryModule::class,
         DatabaseModule::class,
         SettingsModule::class

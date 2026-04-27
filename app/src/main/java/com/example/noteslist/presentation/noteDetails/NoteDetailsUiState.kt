@@ -10,7 +10,8 @@ data class NoteDetailsUiState(
     val isRead: Boolean = false,
     val isReadManuallyEdited: Boolean = false,
     val showUnsavedDialog: Boolean = false,
-    val isNewNote: Boolean = true
+    val isNewNote: Boolean = true,
+    val isSaving: Boolean = false
 ) {
     val hasChanges: Boolean
         get() = title != (currentNote?.title ?: "") ||

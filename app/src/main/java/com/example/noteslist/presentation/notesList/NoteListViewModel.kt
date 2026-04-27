@@ -2,7 +2,9 @@ package com.example.noteslist.presentation.notesList
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.noteslist.data.local.settings.AppLaunchTracker
 import com.example.noteslist.data.local.settings.StackSettingsStore
+import com.example.noteslist.di.ApplicationScope
 import com.example.noteslist.domain.repository.NoteRepository
 import com.example.noteslist.domain.model.list.ListItem
 import com.example.noteslist.domain.model.list.NoteStackItem
@@ -12,6 +14,9 @@ import com.example.noteslist.domain.usecase.ToggleNoteReadStatusUseCase
 import com.example.noteslist.domain.usecase.ToggleStackUseCase
 import jakarta.inject.Inject
 import java.util.UUID
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -20,10 +25,11 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class NoteListViewModel @Inject constructor(
+    @param:ApplicationScope private val applicationScope: CoroutineScope,
+    private val appLaunchTracker: AppLaunchTracker,
     private val stackSettingsStore: StackSettingsStore,
     private val repository: NoteRepository,
     private val prepareUseCase: PrepareNoteListUseCase,
@@ -39,6 +45,12 @@ class NoteListViewModel @Inject constructor(
 
     private val _stackSettings = MutableStateFlow(StackSettings())
     val stackSettings: StateFlow<StackSettings> = _stackSettings
+    private val _showInitialShimmer = MutableStateFlow(appLaunchTracker.shouldShowInitialShimmer())
+    val showInitialShimmer: StateFlow<Boolean> = _showInitialShimmer
+
+    init {
+        observeInitialLoad()
+    }
 
     val uiItems: StateFlow<List<ListItem>> = combine(
         repository.notes,
@@ -62,9 +74,11 @@ class NoteListViewModel @Inject constructor(
 
     fun toggleNoteReadStatus(noteId: UUID?) {
         val targetId = noteId ?: return
-        viewModelScope.launch {
-            repository.notes.first().firstOrNull { it.id == targetId }?.let { note ->
-                toggleNoteReadStatusUseCase(note)
+        applicationScope.launch {
+            runCatching {
+                repository.notes.first().firstOrNull { it.id == targetId }?.let { note ->
+                    toggleNoteReadStatusUseCase(note)
+                }
             }
         }
     }
@@ -107,8 +121,33 @@ class NoteListViewModel @Inject constructor(
             )
         }
 
-        viewModelScope.launch {
-            stackSettingsStore.saveStackSettings(updatedSettings)
+        applicationScope.launch {
+            runCatching {
+                stackSettingsStore.saveStackSettings(updatedSettings)
+            }
         }
+    }
+
+    private fun observeInitialLoad() {
+        viewModelScope.launch {
+            if (!_showInitialShimmer.value) return@launch
+
+            val shimmerStartedAt = System.currentTimeMillis()
+
+            repository.notes.first { it.isNotEmpty() }
+
+            val elapsed = System.currentTimeMillis() - shimmerStartedAt
+            val remainingDuration = (MIN_SHIMMER_DURATION_MS - elapsed).coerceAtLeast(0L)
+            if (remainingDuration > 0) {
+                delay(remainingDuration)
+            }
+
+            _showInitialShimmer.value = false
+            appLaunchTracker.markInitialShimmerCompleted()
+        }
+    }
+
+    private companion object {
+        private const val MIN_SHIMMER_DURATION_MS = 5000L
     }
 }

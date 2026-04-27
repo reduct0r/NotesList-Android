@@ -3,11 +3,10 @@ package com.example.noteslist
 import android.app.Application
 import android.util.Log
 import com.example.noteslist.data.local.database.DatabaseSeeder
+import com.example.noteslist.di.ApplicationScope
 import com.example.noteslist.di.AppComponent
 import com.example.noteslist.di.DaggerAppComponent
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,6 +18,10 @@ class NoteListApp : Application() {
     @Inject
     lateinit var seeder: DatabaseSeeder
 
+    @Inject
+    @ApplicationScope
+    lateinit var applicationScope: CoroutineScope
+
     override fun onCreate() {
         super.onCreate()
 
@@ -29,7 +32,7 @@ class NoteListApp : Application() {
                 it.inject(this)
             }
 
-        CoroutineScope(Dispatchers.IO + SupervisorJob()).launch {
+        applicationScope.launch {
             try {
                 seeder.seedIfNeeded()
             } catch (e: Exception) {

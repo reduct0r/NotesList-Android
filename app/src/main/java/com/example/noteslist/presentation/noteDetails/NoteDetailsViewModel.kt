@@ -2,6 +2,7 @@ package com.example.noteslist.presentation.noteDetails
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.noteslist.di.ApplicationScope
 import com.example.noteslist.domain.repository.NoteRepository
 import com.example.noteslist.domain.model.Note
 import com.example.noteslist.domain.model.isNew
@@ -10,6 +11,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import java.util.UUID
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -22,6 +24,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class NoteDetailsViewModel @AssistedInject constructor(
+    @param:ApplicationScope private val applicationScope: CoroutineScope,
     private val repository: NoteRepository,
     private val createNewNoteUseCase: CreateNewNoteUseCase,
     @Assisted private val noteId: UUID?
@@ -82,19 +85,22 @@ class NoteDetailsViewModel @AssistedInject constructor(
 
     fun onSaveClicked() {
         val state = _uiState.value
-        if (state.title.isBlank()) return
+        if (state.title.isBlank() || state.isSaving) return
 
         val note = buildNoteFromState(state)
+        _uiState.update { it.copy(isSaving = true) }
 
-        viewModelScope.launch {
-            if (note.isNew()) {
-                repository.addNote(note.copy(id = UUID.randomUUID()))
-            } else {
-                repository.updateNote(note)
+        applicationScope.launch {
+            runCatching {
+                if (note.isNew()) {
+                    repository.addNote(note.copy(id = UUID.randomUUID()))
+                } else {
+                    repository.updateNote(note)
+                }
             }
-
-            _events.emit(UiEvent.NavigateBack)
         }
+
+        navigateBack()
     }
 
     fun onBackPressedRequested() {

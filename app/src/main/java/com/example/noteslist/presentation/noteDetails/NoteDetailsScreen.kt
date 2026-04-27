@@ -231,6 +231,7 @@ private fun NoteDetailsScreenScaffold(
 
                     NoteSaveButton(
                         isNewNote = uiState.isNewNote,
+                        isSaving = uiState.isSaving,
                         onSave = onSave
                     )
                 }
@@ -264,6 +265,7 @@ private fun NoteDetailsScreenScaffold(
 
                 NoteSaveButton(
                     isNewNote = uiState.isNewNote,
+                    isSaving = uiState.isSaving,
                     onSave = onSave
                 )
             }
@@ -364,10 +366,12 @@ private fun NoteFlagsAndMeta(
 @Composable
 private fun NoteSaveButton(
     isNewNote: Boolean,
+    isSaving: Boolean,
     onSave: () -> Unit
 ) {
     Button(
         onClick = onSave,
+        enabled = !isSaving,
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(if (isNewNote) stringResource(R.string.add) else stringResource(R.string.save))

@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.androidx.appcompat)
+    implementation(libs.facebook.shimmer)
     implementation(libs.material)
 
     val composeBom = platform("androidx.compose:compose-bom:2026.03.00")

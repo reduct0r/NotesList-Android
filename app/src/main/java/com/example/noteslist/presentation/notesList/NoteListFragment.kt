@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.BundleCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
@@ -125,6 +126,7 @@ class NoteListFragment: Fragment() {
         }
 
         viewModel.initializeStackSettingsIfNeeded(resolveDefaultStackSettings())
+        renderShimmer(viewModel.showInitialShimmer.value)
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -139,6 +141,14 @@ class NoteListFragment: Fragment() {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.stackSettings.collect { settings ->
                     adapter.updateStackSettings(settings)
+                }
+            }
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.showInitialShimmer.collect { shouldShow ->
+                    renderShimmer(shouldShow)
                 }
             }
         }
@@ -193,6 +203,8 @@ class NoteListFragment: Fragment() {
         pendingRecyclerState = binding.recyclerView.layoutManager?.onSaveInstanceState()
         pendingWasAtBottom = !binding.recyclerView.canScrollVertically(1)
         isRecyclerStateRestored = false
+        binding.shimmerContainer.stopShimmer()
+        binding.recyclerView.adapter = null
         super.onDestroyView()
         _binding = null
     }
@@ -223,6 +235,20 @@ class NoteListFragment: Fragment() {
 
     private fun resolveDefaultStackSettings(): StackSettings {
         return ItemNoteStackBinding.inflate(layoutInflater).noteStack.getStackSettings()
+    }
+
+    private fun renderShimmer(shouldShow: Boolean) {
+        val currentBinding = _binding ?: return
+        currentBinding.shimmerContainer.isVisible = shouldShow
+        currentBinding.recyclerView.isVisible = !shouldShow
+        currentBinding.fab.isVisible = !shouldShow
+        currentBinding.settingsFab.isVisible = !shouldShow
+
+        if (shouldShow) {
+            currentBinding.shimmerContainer.startShimmer()
+        } else {
+            currentBinding.shimmerContainer.stopShimmer()
+        }
     }
 
     companion object {
